@@ -8,7 +8,7 @@ export default function SettingsPage() {
   const [selectedCurrency, setSelectedCurrency] = useState("USD");
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full max-w-5xl">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">General Settings</h1>
         <Button>Save Settings</Button>
