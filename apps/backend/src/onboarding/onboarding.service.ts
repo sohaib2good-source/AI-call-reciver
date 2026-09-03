@@ -40,8 +40,8 @@ export class OnboardingService {
         },
         subscription: {
           create: {
-            plan: 'TRIAL',
-            status: 'ACTIVE',
+            plan: 'FREE_TRIAL',
+            status: 'TRIALING',
             currentPeriodStart: new Date(),
             currentPeriodEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
           }

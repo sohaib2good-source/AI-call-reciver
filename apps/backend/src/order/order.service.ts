@@ -48,7 +48,7 @@ export class OrderService {
         customerId: payload.customerId,
         tableId: payload.tableId,
         items: {
-          create: payload.items.map(item => ({
+          create: payload.items.map((item: any) => ({
             itemName: "Menu Item Placeholder", // Snapshot
             basePrice: 10.0, // Snapshot
             quantity: item.quantity,

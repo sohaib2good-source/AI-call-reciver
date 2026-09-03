@@ -9,7 +9,7 @@ export class OnboardingController {
   @Post('complete')
   @UseGuards(AuthGuard('firebase-auth'))
   async completeOnboarding(
-    @Request() req,
+    @Request() req: any,
     @Body() body: { restaurantName: string; currency: string; timezone: string; ownerName: string; }
   ) {
     const user = req.user; // populated by FirebaseStrategy

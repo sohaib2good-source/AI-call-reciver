@@ -13,7 +13,7 @@ export class InvitationController {
   @UseGuards(AuthGuard('firebase-auth'), RolesGuard)
   @Roles(Role.OWNER, Role.MANAGER)
   async inviteUser(
-    @Request() req,
+    @Request() req: any,
     @Body() body: { email: string; role: Role }
   ) {
     // Only Owners and Managers can invite users

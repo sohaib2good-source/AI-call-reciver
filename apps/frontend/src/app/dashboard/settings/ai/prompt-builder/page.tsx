@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@ai-restaurant/ui";
+import { AiCallAutoAnswerCard } from "@/components/AiCallAutoAnswerCard";
 
 export default function AiPromptBuilderPage() {
   return (
@@ -15,6 +16,8 @@ export default function AiPromptBuilderPage() {
           <Button>Save Configuration</Button>
         </div>
       </div>
+
+      <AiCallAutoAnswerCard />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         

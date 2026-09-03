@@ -17,12 +17,21 @@ import { AiCoreModule } from './ai-core/ai-core.module';
 import { VoiceModule } from './voice/voice.module';
 import { BillingModule } from './billing/billing.module';
 
+import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
+import { OnboardingModule } from './onboarding/onboarding.module';
+import { UsersModule } from './users/users.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '../../.env',
+      envFilePath: ['.env', '../../.env', '../.env'],
     }),
+    PrismaModule,
+    AuthModule,
+    OnboardingModule,
+    UsersModule,
     HealthModule,
     RestaurantModule,
     BusinessHoursModule,

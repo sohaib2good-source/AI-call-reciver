@@ -17,6 +17,12 @@ export class RestaurantController {
     return { success: true, data };
   }
 
+  @Get('profile/agent-context')
+  async getAgentProfileContext(@Req() req: TenantRequest) {
+    const data = await this.restaurantService.getAgentProfileContext(req.tenantId!);
+    return { success: true, data };
+  }
+
   @Put('profile')
   async updateProfile(@Req() req: TenantRequest, @Body() data: any) {
     const updated = await this.restaurantService.updateProfile(req.tenantId!, data);

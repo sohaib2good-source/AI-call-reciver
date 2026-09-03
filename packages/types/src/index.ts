@@ -120,7 +120,8 @@ export interface BusinessHours {
 
 // Tables & Areas
 export type AreaType = 'INDOOR' | 'OUTDOOR' | 'VIP' | 'TERRACE' | 'BAR' | 'PRIVATE_ROOM';
-export type TableStatus = 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'MAINTENANCE';
+export type TableShape = 'RECTANGLE' | 'SQUARE' | 'ROUND' | 'OVAL';
+export type TableStatus = 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'CLEANING' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
 
 export interface RestaurantArea {
   id: string;
@@ -134,9 +135,16 @@ export interface Table {
   id: string;
   name: string;
   capacity: number;
+  minGuests?: number;
+  maxGuests?: number;
+  shape?: TableShape;
   status: TableStatus;
-  maintenanceMode: boolean;
-  reservationPriority: number;
+  maintenanceMode?: boolean;
+  reservationPriority?: number;
+  xPos?: number;
+  yPos?: number;
+  width?: number;
+  height?: number;
   areaId: string;
 }
 
@@ -156,7 +164,49 @@ export interface PickupSettings {
   pickupAvailability: boolean;
 }
 
+export interface AiPickupDelay {
+  rings: number;
+  seconds: number;
+  mode: 'IMMEDIATE' | 'DELAYED';
+  strategy: 'IMMEDIATE_PICKUP' | 'QUICK_PICKUP' | 'STAFF_FIRST' | 'STAFF_PRIORITY' | 'MAX_DELAY';
+  description: string;
+}
+
+export interface AiAutoAnsweringConfig {
+  enabled: boolean;
+  pickupDelay: AiPickupDelay;
+  operatingHoursOnly?: boolean;
+}
+
+export interface AiAgentTelephonyConfig {
+  ai_agent_status: 'ACTIVE' | 'DISABLED';
+  auto_answering: {
+    enabled: boolean;
+    pickup_delay: {
+      rings: number;
+      seconds: number;
+      mode: 'IMMEDIATE' | 'DELAYED';
+      strategy: string;
+      description: string;
+    };
+    operating_hours_only: boolean;
+  };
+  voice_persona: {
+    voice_id: string;
+    tone: string;
+    languages: string[];
+    greeting: string;
+  };
+  active_skills: string[];
+  escalation: {
+    transfer_on_failure: boolean;
+    max_unrecognized_intents: number;
+    transfer_phone_number: string;
+  };
+}
+
 export interface AiSettings {
+  autoAnswering?: AiAutoAnsweringConfig;
   greeting?: string;
   voicePersonality?: string;
   supportedLanguages: string[];
@@ -330,23 +380,6 @@ export interface AiCustomerContextResponse {
 }
 
 // Reservation & Table Management
-export type TableShape = 'RECTANGLE' | 'SQUARE' | 'ROUND' | 'OVAL';
-export type TableStatus = 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'CLEANING' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
-
-export interface Table {
-  id: string;
-  name: string;
-  capacity: number;
-  minGuests: number;
-  maxGuests: number;
-  shape: TableShape;
-  status: TableStatus;
-  xPos: number;
-  yPos: number;
-  width: number;
-  height: number;
-  areaId: string;
-}
 
 export type ReservationStatus = 'INQUIRY' | 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'LATE_ARRIVAL' | 'WALK_IN';
 

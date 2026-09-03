@@ -17,6 +17,12 @@ export class AiSettingsController {
     return { success: true, data };
   }
 
+  @Get('agent-config')
+  async getAgentConfig(@Req() req: TenantRequest) {
+    const data = await this.service.getAgentConfig(req.tenantId!);
+    return { success: true, data };
+  }
+
   @Put()
   async updateSettings(@Req() req: TenantRequest, @Body() data: any) {
     const updated = await this.service.updateSettings(req.tenantId!, data);
