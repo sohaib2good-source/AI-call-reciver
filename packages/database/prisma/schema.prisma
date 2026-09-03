@@ -1,0 +1,1284 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id                 String   @id @default(uuid())
+  name               String
+  businessName       String?
+  legalName          String?
+  brandName          String?
+  description        String?
+  cuisineType        String?
+  logo               String?
+  coverImage         String?
+  phoneNumbers       String[]
+  email              String?
+  website            String?
+  timezone           String   @default("UTC")
+  currency           String   @default("USD")
+  taxSettings        Json?
+  serviceCharge      Float?
+  vatNumber          String?
+  registrationNumber String?
+  status             TenantStatus @default(ACTIVE)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  users              User[]
+  address            Address?
+  businessHours      BusinessHours[]
+  restaurantAreas    RestaurantArea[]
+  deliverySettings   DeliverySettings?
+  pickupSettings     PickupSettings?
+  aiSettings         AiSettings?
+  auditLogs          AuditLog[]
+  menus              Menu[]
+  customers          Customer[]
+  floors             RestaurantFloor[]
+  reservations       Reservation[]
+  waitlists          Waitlist[]
+  orders             Order[]
+  kitchenStations    KitchenStation[]
+  conversations      ConversationSession[]
+  assignedPhoneNumbers PhoneNumber[]
+  voiceSettings      VoiceSettings?
+  callRecords        CallRecord[]
+  
+  subscription       Subscription?
+  usageRecords       UsageRecord[]
+  invoices           Invoice[]
+  featureFlags       FeatureFlag[]
+  apiKeys            ApiKey[]
+  webhooks           WebhookEndpoint[]
+  invitations        Invitation[]
+  preferences        RestaurantPreference?
+
+  @@map("tenants")
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  PAST_DUE
+  CANCELED
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  street     String
+  city       String
+  state      String
+  country    String
+  postalCode String
+  
+  tenantId   String   @unique
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model BusinessHours {
+  id          String   @id @default(uuid())
+  type        HoursType
+  dayOfWeek   Int?     // 0-6 for Normal/Kitchen/Delivery/Reservation
+  startDate   DateTime? // For Holiday/Temporary Closures/Special Events
+  endDate     DateTime? // For Holiday/Temporary Closures/Special Events
+  openTime    String?   // "09:00"
+  closeTime   String?   // "22:00"
+  isClosed    Boolean  @default(false)
+  
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("business_hours")
+}
+
+enum HoursType {
+  NORMAL
+  HOLIDAY
+  TEMPORARY_CLOSURE
+  KITCHEN
+  DELIVERY
+  RESERVATION
+  SPECIAL_EVENT
+}
+
+model RestaurantFloor {
+  id          String   @id @default(uuid())
+  name        String
+  level       Int      @default(1)
+  
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  areas       RestaurantArea[]
+
+  @@map("restaurant_floors")
+}
+
+model RestaurantArea {
+  id          String   @id @default(uuid())
+  name        String
+  type        AreaType
+  description String?
+  
+  floorId     String?
+  floor       RestaurantFloor? @relation(fields: [floorId], references: [id], onDelete: SetNull)
+  
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  tables      Table[]
+
+  @@map("restaurant_areas")
+}
+
+enum AreaType {
+  INDOOR
+  OUTDOOR
+  VIP
+  TERRACE
+  BAR
+  PRIVATE_ROOM
+  WAITING_AREA
+}
+
+model Table {
+  id                 String   @id @default(uuid())
+  name               String
+  tableNumber        String?
+  capacity           Int      // Default capacity
+  minGuests          Int      @default(1)
+  maxGuests          Int
+  shape              TableShape @default(RECTANGLE)
+  
+  // Floor Plan Canvas Coordinates
+  xPos               Float    @default(0)
+  yPos               Float    @default(0)
+  width              Float    @default(100)
+  height             Float    @default(100)
+  
+  status             TableStatus @default(AVAILABLE)
+  isActive           Boolean  @default(true)
+  maintenanceMode    Boolean  @default(false)
+  reservationPriority Int     @default(0) // Higher number = higher priority
+  notes              String?
+  
+  areaId             String
+  area               RestaurantArea @relation(fields: [areaId], references: [id], onDelete: Cascade)
+  
+  reservations       Reservation[]
+
+  @@map("tables")
+}
+
+enum TableShape {
+  RECTANGLE
+  SQUARE
+  ROUND
+  OVAL
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  CLEANING
+  MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+model DeliverySettings {
+  id                   String   @id @default(uuid())
+  deliveryRadiusKm     Float?
+  deliveryZones        Json?
+  deliveryFees         Json?
+  minimumOrder         Float?
+  preparationTimeMins  Int      @default(30)
+  estimatedDeliveryMins Int     @default(45)
+
+  tenantId             String   @unique
+  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("delivery_settings")
+}
+
+model PickupSettings {
+  id                   String   @id @default(uuid())
+  preparationTimeMins  Int      @default(20)
+  pickupInstructions   String?
+  pickupAvailability   Boolean  @default(true)
+
+  tenantId             String   @unique
+  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("pickup_settings")
+}
+
+model AiSettings {
+  id                   String   @id @default(uuid())
+  systemPrompt         String?  @db.Text
+  greeting             String?
+  voicePersonality     String?
+  tone                 String?
+  supportedLanguages   String[] @default(["en"])
+  businessRules        Json?
+  transferRules        Json?
+  fallbackRules        Json?
+  escalationRules      Json?
+  upsellingEnabled     Boolean  @default(false)
+  upsellRules          Json?
+  enabledTools         String[] @default(["searchCustomer", "searchMenu"])
+
+  tenantId             String   @unique
+  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("ai_settings")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  firebaseUid    String?  @unique
+  email          String   @unique
+  passwordHash   String?
+  firstName      String?
+  lastName       String?
+  phone          String?
+  role           Role     @default(VIEWER)
+  isActive       Boolean  @default(true)
+  loginAttempts  Int      @default(0)
+  lockedUntil    DateTime?
+  
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  preferences    UserPreference?
+  sessions       Session[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("users")
+}
+
+model UserPreference {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language             String   @default("en")
+  theme                String   @default("system")
+  notificationsEnabled Boolean  @default(true)
+
+  @@map("user_preferences")
+}
+
+model Invitation {
+  id        String   @id @default(uuid())
+  email     String
+  role      Role
+  token     String   @unique
+  expiresAt DateTime
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  
+  @@unique([email, tenantId])
+  @@map("invitations")
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  RECEPTIONIST
+  KITCHEN
+  CASHIER
+  DELIVERY
+  VIEWER
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  entity    String
+  entityId  String
+  details   Json?
+  userId    String?
+  
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model Menu {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean    @default(true)
+  
+  tenantId    String
+  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  categories  Category[]
+
+  @@map("menus")
+}
+
+model Category {
+  id            String     @id @default(uuid())
+  name          String
+  description   String?
+  displayOrder  Int        @default(0)
+  image         String?
+  icon          String?
+  status        ItemStatus @default(ACTIVE)
+  seoSlug       String?
+
+  menuId        String
+  menu          Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  parentId      String?
+  parent        Category?  @relation("SubCategories", fields: [parentId], references: [id], onDelete: SetNull)
+  subCategories Category[] @relation("SubCategories")
+
+  items         MenuItem[]
+
+  @@map("categories")
+}
+
+model MenuItem {
+  id              String     @id @default(uuid())
+  name            String
+  shortDesc       String?
+  longDesc        String?
+  sku             String?    @unique
+  barcode         String?    @unique
+  image           String?
+  galleryImages   String[]
+  videoUrl        String?
+  
+  price           Float
+  costPrice       Float?
+  calories        Int?
+  ingredients     String[]
+  nutrition       Json?
+  
+  prepTimeMins    Int?
+  kitchenStation  String?
+  printerGroup    String?
+  taxCategory     String?
+  
+  status          ItemStatus @default(ACTIVE)
+  
+  // Flags
+  isFeatured      Boolean    @default(false)
+  isPopular       Boolean    @default(false)
+  isRecommended   Boolean    @default(false)
+  isSeasonal      Boolean    @default(false)
+  isNewItem       Boolean    @default(true)
+  
+  spicyLevel      Int        @default(0)
+  isHalal         Boolean    @default(false)
+  isKosher        Boolean    @default(false)
+  isVegetarian    Boolean    @default(false)
+  isVegan         Boolean    @default(false)
+  isGlutenFree    Boolean    @default(false)
+  isOrganic       Boolean    @default(false)
+  isSugarFree     Boolean    @default(false)
+  isDairyFree     Boolean    @default(false)
+  isAgeRestricted Boolean    @default(false)
+
+  categoryId      String
+  category        Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  variants        ItemVariant[]
+  modifierGroups  ItemModifierGroup[]
+  addOns          ItemAddOn[]
+  comboItems      ComboItem[]
+
+  @@map("menu_items")
+}
+
+enum ItemStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK
+  ARCHIVED
+}
+
+model ItemVariant {
+  id           String   @id @default(uuid())
+  name         String
+  price        Float
+  calories     Int?
+  prepTimeMins Int?
+  isAvailable  Boolean  @default(true)
+
+  itemId       String
+  item         MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@map("item_variants")
+}
+
+model ModifierGroup {
+  id               String   @id @default(uuid())
+  name             String
+  minSelection     Int      @default(0)
+  maxSelection     Int      @default(1)
+  isRequired       Boolean  @default(false)
+  
+  tenantId         String
+  
+  modifiers        Modifier[]
+  menuItems        ItemModifierGroup[]
+
+  @@map("modifier_groups")
+}
+
+model Modifier {
+  id               String   @id @default(uuid())
+  name             String
+  price            Float    @default(0)
+  isAvailable      Boolean  @default(true)
+
+  modifierGroupId  String
+  modifierGroup    ModifierGroup @relation(fields: [modifierGroupId], references: [id], onDelete: Cascade)
+
+  @@map("modifiers")
+}
+
+model ItemModifierGroup {
+  itemId          String
+  modifierGroupId String
+  
+  item            MenuItem      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  modifierGroup   ModifierGroup @relation(fields: [modifierGroupId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, modifierGroupId])
+  @@map("item_modifier_groups")
+}
+
+model AddOn {
+  id               String   @id @default(uuid())
+  name             String
+  price            Float
+  isAvailable      Boolean  @default(true)
+  displayOrder     Int      @default(0)
+  
+  tenantId         String
+  
+  menuItems        ItemAddOn[]
+
+  @@map("add_ons")
+}
+
+model ItemAddOn {
+  itemId  String
+  addOnId String
+  
+  item    MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  addOn   AddOn    @relation(fields: [addOnId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, addOnId])
+  @@map("item_add_ons")
+}
+
+model Combo {
+  id               String   @id @default(uuid())
+  name             String
+  description      String?
+  price            Float
+  isAvailable      Boolean  @default(true)
+  
+  tenantId         String
+  
+  items            ComboItem[]
+
+  @@map("combos")
+}
+
+model ComboItem {
+  comboId String
+  itemId  String
+  
+  combo   Combo    @relation(fields: [comboId], references: [id], onDelete: Cascade)
+  item    MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([comboId, itemId])
+  @@map("combo_items")
+}
+
+// ==========================================
+// SPRINT 4: CRM MODULE
+// ==========================================
+
+model Customer {
+  id                   String    @id @default(uuid())
+  customerId           String?   // User-defined ID (e.g., POS sync)
+  firstName            String
+  lastName             String?
+  preferredName        String?
+  
+  primaryPhone         String
+  secondaryPhone       String?
+  whatsappNumber       String?
+  email                String?
+  
+  dob                  DateTime?
+  anniversary          DateTime?
+  gender               String?
+  language             String    @default("en")
+  
+  country              String?
+  city                 String?
+  address              String?
+  postalCode           String?
+  timezone             String?
+  
+  customerNotes        String?
+  internalNotes        String?
+  profilePhoto         String?
+  tags                 String[]  // E.g., ["VIP", "Corporate", "Frequent"]
+  segments             String[]  // System-assigned (e.g., "High Value")
+  
+  // Stats
+  customerSince        DateTime  @default(now())
+  lastVisit            DateTime?
+  lastPhoneCall        DateTime?
+  lastOrder            DateTime?
+  lastReservation      DateTime?
+  totalOrders          Int       @default(0)
+  totalReservations    Int       @default(0)
+  lifetimeValue        Float     @default(0)
+  
+  // Status
+  isVip                Boolean   @default(false)
+  isBlacklisted        Boolean   @default(false)
+  marketingConsent     Boolean   @default(false)
+  gdprConsent          Boolean   @default(false)
+  preferredContact     String    @default("PHONE")
+  
+  tenantId             String
+  tenant               Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  preferences          CustomerPreferences?
+  dietary              CustomerDietary?
+  loyalty              CustomerLoyalty?
+  timeline             CustomerTimeline[]
+  orders               Order[]
+  conversations        ConversationSession[]
+  reservations         Reservation[]
+  waitlistEntries      WaitlistEntry[]
+
+  @@unique([tenantId, primaryPhone])
+  @@map("customers")
+}
+
+model CustomerPreferences {
+  id                      String   @id @default(uuid())
+  favoriteFoods           String[]
+  favoriteDrinks          String[]
+  favoriteTableId         String?
+  favoriteSeatingAreaId   String?
+  favoriteWaiterId        String?
+  favoriteDeliveryAddress String?
+  preferredPaymentMethod  String?
+  preferredLanguage       String?
+  preferredOrderTime      String?
+  preferredReservationTime String?
+  favoriteMenuItems       String[] // References MenuItem IDs
+  favoriteAddOns          String[] // References AddOn IDs
+  favoritePromotions      String[]
+  
+  customerId              String   @unique
+  customer                Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_preferences")
+}
+
+model CustomerDietary {
+  id                      String   @id @default(uuid())
+  isHalal                 Boolean  @default(false)
+  isKosher                Boolean  @default(false)
+  isVegetarian            Boolean  @default(false)
+  isVegan                 Boolean  @default(false)
+  isGlutenFree            Boolean  @default(false)
+  isLactoseFree           Boolean  @default(false)
+  hasNutAllergy           Boolean  @default(false)
+  hasSeafoodAllergy       Boolean  @default(false)
+  hasEggAllergy           Boolean  @default(false)
+  hasMilkAllergy          Boolean  @default(false)
+  customAllergies         String[]
+  customDietaryNotes      String?
+  
+  customerId              String   @unique
+  customer                Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_dietary")
+}
+
+model CustomerLoyalty {
+  id                      String   @id @default(uuid())
+  points                  Int      @default(0)
+  lifetimePoints          Int      @default(0)
+  membershipLevel         LoyaltyTier @default(BRONZE)
+  pointsExpirationDate    DateTime?
+  
+  customerId              String   @unique
+  customer                Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_loyalty")
+}
+
+enum LoyaltyTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+}
+
+model CustomerTimeline {
+  id          String   @id @default(uuid())
+  type        TimelineEventType
+  title       String
+  description String?
+  metadata    Json?    // Flexible JSON for specific event data (Order ID, Call Transcript, etc.)
+  createdAt   DateTime @default(now())
+  
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_timeline")
+}
+
+enum TimelineEventType {
+  CREATED
+  PHONE_CALL
+  RESERVATION
+  ORDER
+  PAYMENT
+  REFUND
+  COMPLAINT
+  REVIEW
+  AI_CONVERSATION
+  COUPON_USED
+  LOYALTY_CHANGE
+  MERGE
+}
+
+// ==========================================
+// SPRINT 5: RESERVATION & TABLE MANAGEMENT
+// ==========================================
+
+model Reservation {
+  id                 String   @id @default(uuid())
+  reservationNumber  String   @unique
+  
+  reservationDate    DateTime // The Date of the booking (normalized to 00:00:00 UTC for querying)
+  reservationTime    String   // HH:MM format
+  estimatedDuration  Int      @default(90) // in minutes
+  
+  guests             Int
+  adults             Int      @default(2)
+  children           Int      @default(0)
+  infants            Int      @default(0)
+  
+  status             ReservationStatus @default(PENDING)
+  source             String   @default("WEBSITE") // WEBSITE, PHONE, AI_RECEPTIONIST, WALK_IN
+  occasion           String?  // Birthday, Anniversary, etc.
+  specialRequests    String?
+  areaPreference     String?
+  
+  confirmationStatus Boolean  @default(false)
+  reminderStatus     String?  // e.g. "SENT_24H"
+  notes              String?
+  createdBy          String?  // user ID if manual, or 'AI_AGENT'
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  customerId         String
+  customer           Customer @relation(fields: [customerId], references: [id])
+  
+  tableId            String?
+  table              Table?   @relation(fields: [tableId], references: [id])
+  
+  tenantId           String
+  tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("reservations")
+}
+
+enum ReservationStatus {
+  INQUIRY
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  SEATED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  LATE_ARRIVAL
+  WALK_IN
+}
+
+model Waitlist {
+  id                 String   @id @default(uuid())
+  date               DateTime @unique // One waitlist per tenant per day
+  isAccepting        Boolean  @default(true)
+  
+  tenantId           String
+  tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  entries            WaitlistEntry[]
+
+  @@map("waitlists")
+}
+
+model WaitlistEntry {
+  id                 String   @id @default(uuid())
+  guests             Int
+  quotedTimeMins     Int      @default(30)
+  priority           Int      @default(0)
+  status             WaitlistStatus @default(WAITING)
+  notes              String?
+  
+  joinedAt           DateTime @default(now())
+  notifiedAt         DateTime?
+  seatedAt           DateTime?
+  
+  customerId         String
+  customer           Customer @relation(fields: [customerId], references: [id])
+  
+  waitlistId         String
+  waitlist           Waitlist @relation(fields: [waitlistId], references: [id], onDelete: Cascade)
+
+  @@map("waitlist_entries")
+}
+
+enum WaitlistStatus {
+  WAITING
+  NOTIFIED
+  SEATED
+  CANCELLED
+  NO_SHOW
+}
+
+// ==========================================
+// SPRINT 6: ORDER MANAGEMENT & KITCHEN (KDS)
+// ==========================================
+
+model KitchenStation {
+  id               String   @id @default(uuid())
+  name             String   // e.g., "Grill", "Pizza", "Dessert"
+  description      String?
+  isActive         Boolean  @default(true)
+  
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  orderItems       OrderItem[]
+
+  @@map("kitchen_stations")
+}
+
+model Order {
+  id               String   @id @default(uuid())
+  orderNumber      String   @unique
+  type             OrderType @default(DINE_IN)
+  status           OrderStatus @default(PENDING)
+  
+  // Pricing Snapshot (Absolute Source of Truth)
+  subtotal         Float    @default(0)
+  taxTotal         Float    @default(0)
+  discountTotal    Float    @default(0)
+  deliveryFee      Float    @default(0)
+  serviceCharge    Float    @default(0)
+  packagingFee     Float    @default(0)
+  tip              Float    @default(0)
+  grandTotal       Float    @default(0)
+  
+  isPaid           Boolean  @default(false)
+  paymentMethod    String?
+  
+  // Timing
+  estimatedPrepTimeMins Int @default(0)
+  requestedTime    DateTime? // For Scheduled/Preorders
+  readyAt          DateTime?
+  deliveredAt      DateTime?
+  
+  // Delivery/Dine-In Metadata
+  tableId          String?
+  deliveryAddress  String?
+  driverId         String?  // Reference to User/Driver
+  notes            String?
+  
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  customerId       String?
+  customer         Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  
+  items            OrderItem[]
+  timeline         OrderTimeline[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("orders")
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+  PICKUP
+  AI_PHONE
+  QR_ORDER
+  WEBSITE
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  CONFIRMED
+  KITCHEN_ACCEPTED
+  PREPARING
+  COOKING
+  PACKED
+  READY
+  DRIVER_ASSIGNED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+model OrderItem {
+  id               String   @id @default(uuid())
+  
+  // Immutability: Store the name and base price at the time of order
+  itemName         String
+  basePrice        Float
+  quantity         Int      @default(1)
+  unitPrice        Float    // basePrice + variant + modifiers
+  totalPrice       Float    // unitPrice * quantity
+  notes            String?
+  
+  kitchenStatus    KitchenItemStatus @default(PENDING)
+  
+  // Links to live catalog (can be null if item was deleted later)
+  menuItemId       String?
+  
+  orderId          String
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  kitchenStationId String?
+  kitchenStation   KitchenStation? @relation(fields: [kitchenStationId], references: [id])
+
+  modifiers        OrderItemModifier[]
+  variants         OrderItemVariant[]
+
+  @@map("order_items")
+}
+
+enum KitchenItemStatus {
+  PENDING
+  PREPARING
+  COOKING
+  READY
+  CANCELLED
+}
+
+model OrderItemModifier {
+  id               String   @id @default(uuid())
+  modifierName     String
+  price            Float
+  
+  orderItemId      String
+  orderItem        OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  @@map("order_item_modifiers")
+}
+
+model OrderItemVariant {
+  id               String   @id @default(uuid())
+  variantName      String
+  price            Float
+  
+  orderItemId      String
+  orderItem        OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  @@map("order_item_variants")
+}
+
+model OrderTimeline {
+  id               String   @id @default(uuid())
+  status           OrderStatus
+  notes            String?
+  actor            String   // "System", "AI Agent", "John (Chef)"
+  
+  orderId          String
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+
+  @@map("order_timeline")
+}
+
+// ==========================================
+// SPRINT 7: AI RECEPTIONIST CORE
+// ==========================================
+
+model ConversationSession {
+  id               String   @id @default(uuid())
+  sessionId        String   @unique // Twilio Call SID or Chat Session ID
+  channel          String   @default("VOICE") // VOICE, SMS, WHATSAPP, WEB
+  status           ConversationStatus @default(ACTIVE)
+  language         String   @default("en")
+  
+  // High-level summary of what happened
+  summary          String?  @db.Text
+  outcome          String?  // BOOKED_RESERVATION, PLACED_ORDER, ESCALATED, INFO_PROVIDED
+  
+  // Observability metrics
+  durationMs       Int      @default(0)
+  totalTokens      Int      @default(0)
+  hallucinations   Int      @default(0)
+  errors           Int      @default(0)
+  
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  customerId       String?
+  customer         Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  
+  logs             ConversationLog[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("conversation_sessions")
+}
+
+enum ConversationStatus {
+  ACTIVE
+  COMPLETED
+  ESCALATED
+  FAILED
+}
+
+model ConversationLog {
+  id               String   @id @default(uuid())
+  role             String   // "system", "user", "assistant", "tool"
+  content          String   @db.Text
+  
+  // For Tool calls
+  toolCallId       String?
+  toolName         String?
+  toolArgs         Json?
+  
+  latencyMs        Int      @default(0)
+  tokens           Int      @default(0)
+  
+  sessionId        String
+  session          ConversationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+
+  @@map("conversation_logs")
+}
+
+// ==========================================
+// SPRINT 8: VOICE COMMUNICATION PLATFORM
+// ==========================================
+
+model PhoneNumber {
+  id               String   @id @default(uuid())
+  number           String   @unique // E.164 format +1234567890
+  provider         VoiceProvider @default(TWILIO)
+  capabilities     String[] // ["VOICE", "SMS"]
+  status           PhoneStatus @default(ACTIVE)
+  friendlyName     String?
+  
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("phone_numbers")
+}
+
+enum VoiceProvider {
+  TWILIO
+  VAPI
+  RETELL
+  SIP
+}
+
+enum PhoneStatus {
+  ACTIVE
+  INACTIVE
+  PORTING
+  RELEASED
+}
+
+model VoiceSettings {
+  id               String   @id @default(uuid())
+  fallbackNumber   String?  // Transfer to this if AI fails
+  managerNumber    String?  // Transfer for escalations
+  kitchenNumber    String?
+  voicemailEnabled Boolean  @default(true)
+  recordCalls      Boolean  @default(true)
+  
+  tenantId         String   @unique
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("voice_settings")
+}
+
+model CallRecord {
+  id               String   @id @default(uuid())
+  callSid          String   @unique // Provider's unique ID
+  direction        CallDirection
+  status           CallStatus @default(IN_PROGRESS)
+  
+  fromNumber       String
+  toNumber         String
+  
+  durationSeconds  Int      @default(0)
+  recordingUrl     String?  @db.Text
+  transcriptUrl    String?  @db.Text
+  
+  // Link to ConversationSession (1:1)
+  sessionId        String?  @unique
+  
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("call_records")
+}
+
+enum CallDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum CallStatus {
+  QUEUED
+  RINGING
+  IN_PROGRESS
+  COMPLETED
+  BUSY
+  FAILED
+  NO_ANSWER
+  CANCELED
+  TRANSFERRED
+}
+
+// ==========================================
+// SPRINT 9: SAAS BILLING & ADMINISTRATION
+// ==========================================
+
+model Subscription {
+  id                   String   @id @default(uuid())
+  plan                 SubscriptionPlan @default(FREE_TRIAL)
+  status               SubscriptionStatus @default(TRIALING)
+  
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  
+  currentPeriodStart   DateTime @default(now())
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean  @default(false)
+  
+  tenantId             String   @unique
+  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("subscriptions")
+}
+
+enum SubscriptionPlan {
+  FREE_TRIAL
+  STARTER
+  PRO
+  BUSINESS
+  ENTERPRISE
+  CUSTOM
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+model UsageRecord {
+  id               String   @id @default(uuid())
+  metric           UsageMetric
+  quantity         Int      @default(0)
+  date             DateTime @db.Date // Aggregated daily
+  
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([tenantId, metric, date])
+  @@map("usage_records")
+}
+
+enum UsageMetric {
+  AI_MINUTES
+  AI_TOKENS
+  SMS_SEGMENTS
+  PHONE_CALLS
+  ORDERS
+  RESERVATIONS
+}
+
+model Invoice {
+  id               String   @id @default(uuid())
+  stripeInvoiceId  String?  @unique
+  amount           Float
+  currency         String   @default("USD")
+  status           InvoiceStatus @default(DRAFT)
+  
+  invoicePdfUrl    String?  @db.Text
+  paidAt           DateTime?
+  
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  OPEN
+  PAID
+  UNCOLLECTIBLE
+  VOID
+}
+
+model FeatureFlag {
+  id               String   @id @default(uuid())
+  key              String
+  enabled          Boolean  @default(false)
+  description      String?
+  
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([tenantId, key])
+  @@map("feature_flags")
+}
+
+// ==========================================
+// SPRINT 10: INTEGRATIONS & API
+// ==========================================
+
+model ApiKey {
+  id               String   @id @default(uuid())
+  name             String
+  keyHash          String   @unique // Hashed, never store plaintext API keys
+  lastUsedAt       DateTime?
+  expiresAt        DateTime?
+  
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("api_keys")
+}
+
+model WebhookEndpoint {
+  id               String   @id @default(uuid())
+  url              String   @db.Text
+  secret           String   // Used to sign the payload (HMAC)
+  events           String[] // ["order.created", "reservation.booked", "*"]
+  isActive         Boolean  @default(true)
+  
+  tenantId         String
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("webhook_endpoints")
+}
+
+// ==========================================
+// SPRINT 1.5: SAAS AUTHENTICATION & MULTI-TENANT
+// ==========================================
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken String   @unique
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  isRevoked    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@map("sessions")
+}
+
+model Permission {
+  id        String   @id @default(uuid())
+  action    String
+  subject   String
+  role      Role
+  
+  createdAt DateTime @default(now())
+  @@unique([role, action, subject])
+  @@map("permissions")
+}
+
+model RestaurantPreference {
+  id                   String   @id @default(uuid())
+  tenantId             String   @unique
+  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  taxEnabled           Boolean  @default(true)
+  serviceChargeEnabled Boolean  @default(false)
+  reservationEnabled   Boolean  @default(true)
+  deliveryEnabled      Boolean  @default(true)
+  pickupEnabled        Boolean  @default(true)
+  dineInEnabled        Boolean  @default(true)
+  
+  @@map("restaurant_preferences")
+}

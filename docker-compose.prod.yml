@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ai_restaurant
+      POSTGRES_PASSWORD: securepassword123
+      POSTGRES_DB: ai_restaurant_prod
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - ai_net
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - ai_net
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - db
+      - redis
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://ai_restaurant:securepassword123@db:5432/ai_restaurant_prod?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=change_me_in_production
+      - STRIPE_SECRET_KEY=sk_live_...
+      - TWILIO_ACCOUNT_SID=AC...
+      - TWILIO_AUTH_TOKEN=...
+      - OPENAI_API_KEY=sk-...
+    ports:
+      - "3001:3001"
+    networks:
+      - ai_net
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  ai_net:
+    driver: bridge
