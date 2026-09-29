@@ -151,22 +151,22 @@ export function AiConversationalUpsellingAddons({
   const activeCount = Object.values(activeModules).filter(Boolean).length;
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-      {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4">
+    <section className="space-y-3">
+      {/* STEP 3 HEADER (OUTSIDE THE BOX) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-amber-50 text-amber-700 rounded-xl">
-            <Sparkles size={24} />
+          <div className="p-2.5 bg-black text-white rounded-xl shadow-xs">
+            <Sparkles size={22} />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded bg-blue-600 text-white">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded bg-black text-white shadow-xs">
                 Step 3
               </span>
-              <h2 className="text-lg font-bold text-gray-900">
-                AI Conversational Add-ons & Upselling
+              <h2 className="text-lg font-extrabold text-gray-950">
+                AI Conversational Add-ons &amp; Upselling
               </h2>
-              <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+              <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-100 text-amber-900 border border-amber-300">
                 {activeCount} of 4 Prompts Active
               </span>
             </div>
@@ -176,11 +176,14 @@ export function AiConversationalUpsellingAddons({
           </div>
         </div>
 
-        <div className="text-xs text-gray-600 bg-gray-50 border px-3 py-1.5 rounded-lg flex items-center gap-2 self-start sm:self-center">
+        <div className="text-xs font-semibold text-gray-900 bg-white border-2 border-black px-3 py-1.5 rounded-lg flex items-center gap-2 self-start sm:self-center shadow-xs">
           <span className="w-2 h-2 rounded-full bg-green-500"></span>
-          <span>Click card to switch between <strong>Will Ask</strong> / <strong>Will Not Ask</strong></span>
+          <span>Click card: <strong>Will Ask</strong> / <strong>Will Not Ask</strong></span>
         </div>
       </div>
+
+      {/* STEP 3 PROMINENT BOX WITH FAT BLACK LINE */}
+      <div className="bg-white rounded-2xl shadow-sm border-[2.5px] border-black p-6 space-y-6">
 
       {/* 4 Cards Grid Matching User Screenshot */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -358,6 +361,7 @@ export function AiConversationalUpsellingAddons({
             </div>
           </div>
         )}
+      </div>
       </div>
     </section>
   );

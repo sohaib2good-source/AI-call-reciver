@@ -124,37 +124,40 @@ export function AiPickupDelaySetting({
   };
 
   return (
-    <section className="bg-white rounded-lg shadow border border-gray-200 p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4">
+    <section className="space-y-3">
+      {/* STEP 2 HEADER (OUTSIDE THE BOX) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
-            <BellRing size={24} />
+          <div className="p-2.5 bg-black text-white rounded-xl shadow-xs">
+            <BellRing size={22} />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded bg-blue-600 text-white">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded bg-black text-white shadow-xs">
                 Step 2
               </span>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-extrabold text-gray-950">
                 Call Pickup Delay (Ringing Threshold)
               </h2>
-              <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+              <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-800 border border-blue-300">
                 {selectedRings} {selectedRings === 1 ? "Ring" : "Rings"} (~{currentOption.seconds}s)
               </span>
             </div>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-500 mt-0.5">
               Set after how many rings the AI receptionist answers incoming calls. Allows staff a chance to pick up first.
             </p>
           </div>
         </div>
 
         {/* Live status badge */}
-        <div className="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-full bg-gray-50 border text-gray-600">
-          <Clock size={14} className="text-blue-600" />
+        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border-2 border-black text-gray-900 shadow-xs self-start sm:self-center">
+          <Clock size={14} className="text-black" />
           <span>Delay: <strong>{currentOption.seconds} seconds</strong></span>
         </div>
       </div>
+
+      {/* STEP 2 PROMINENT BOX WITH FAT BLACK LINE */}
+      <div className="bg-white rounded-2xl shadow-sm border-[2.5px] border-black p-6 space-y-6">
 
       {/* Ring Options Grid */}
       <div className="space-y-3">
@@ -280,6 +283,7 @@ export function AiPickupDelaySetting({
             </div>
           </div>
         )}
+      </div>
       </div>
     </section>
   );

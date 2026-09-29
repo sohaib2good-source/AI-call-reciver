@@ -7,12 +7,27 @@ import {
   Menu,
   X,
   Home,
-  Settings,
-  User,
   Bot,
   Building2,
+  Clock,
+  UtensilsCrossed,
+  Truck,
+  CreditCard,
+  Settings2,
+  Activity,
+  Users,
+  ChefHat,
+  CalendarCheck,
+  LayoutDashboard,
+  Layers,
+  PlusCircle,
+  Utensils,
+  SlidersHorizontal,
+  Tag,
   ChevronDown,
   ChevronRight,
+  User,
+  BookOpen,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -22,18 +37,316 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(pathname?.startsWith("/dashboard/menu") ?? false);
+  const isBusinessIdentityRoute =
+    pathname?.startsWith("/dashboard/restaurant") ||
+    pathname?.startsWith("/dashboard/hours");
+
+  const isMenuRoute =
+    pathname?.startsWith("/dashboard/menu") ||
+    pathname?.startsWith("/dashboard/tables") ||
+    pathname?.startsWith("/dashboard/delivery-pickup");
+
+  const isSystemConfigRoute =
+    pathname?.startsWith("/dashboard/billing") ||
+    pathname?.startsWith("/dashboard/settings") ||
+    pathname?.startsWith("/dashboard/ai-settings") ||
+    pathname?.startsWith("/dashboard/ai-logs");
+
+  const isCrmRoute =
+    pathname?.startsWith("/dashboard/customers") ||
+    pathname?.startsWith("/dashboard/orders") ||
+    pathname?.startsWith("/dashboard/reservations");
+
+  const [isMenuOpen, setIsMenuOpen] = useState(isMenuRoute ?? false);
+  const [isBusinessIdentityOpen, setIsBusinessIdentityOpen] = useState(isBusinessIdentityRoute ?? false);
+  const [isSystemConfigOpen, setIsSystemConfigOpen] = useState(isSystemConfigRoute ?? false);
+  const [isCrmOpen, setIsCrmOpen] = useState(isCrmRoute ?? false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    if (pathname?.startsWith("/dashboard/menu")) {
+    if (isMenuRoute) {
       setIsMenuOpen(true);
     }
-  }, [pathname]);
+  }, [pathname, isMenuRoute]);
+
+  useEffect(() => {
+    if (isBusinessIdentityRoute) {
+      setIsBusinessIdentityOpen(true);
+    }
+  }, [pathname, isBusinessIdentityRoute]);
+
+  useEffect(() => {
+    if (isSystemConfigRoute) {
+      setIsSystemConfigOpen(true);
+    }
+  }, [pathname, isSystemConfigRoute]);
+
+  useEffect(() => {
+    if (isCrmRoute) {
+      setIsCrmOpen(true);
+    }
+  }, [pathname, isCrmRoute]);
 
   if (!mounted) return null;
+
+function TreeNavContainer({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative ml-4 pl-3.5 my-1.5 space-y-1 animate-in fade-in slide-in-from-top-1 duration-150">
+      {/* Darker Main Vertical Trunk Line */}
+      <span
+        aria-hidden="true"
+        className="absolute left-0 top-0 bottom-[18px] w-[2px] bg-gray-400 dark:bg-gray-500 rounded-full"
+      />
+      {children}
+    </div>
+  );
+}
+
+function TreeNavItem({
+  href,
+  children,
+  icon,
+  isActive,
+}: {
+  href: string;
+  children: React.ReactNode;
+  icon?: React.ReactNode;
+  isActive: boolean;
+}) {
+  return (
+    <div className="relative flex items-center">
+      {/* Darker Horizontal Branch Connector from Trunk to Item */}
+      <span
+        aria-hidden="true"
+        className="absolute -left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-[2px] bg-gray-400 dark:bg-gray-500"
+      />
+      <Link
+        href={href}
+        className={`w-full flex items-center gap-2 rounded px-3 py-2 text-sm font-medium transition-colors ${
+          isActive
+            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold"
+            : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+        }`}
+      >
+        {icon}
+        <span>{children}</span>
+      </Link>
+    </div>
+  );
+}
+
+  const renderNavLinks = () => (
+    <>
+      <Link href="/dashboard" className="flex items-center gap-2 rounded bg-gray-100 dark:bg-gray-700 px-3 py-2 text-sm font-medium">
+        <Home size={18} /> Dashboard
+      </Link>
+
+      {/* Business Identity (Collapsible Click to Open) */}
+      <div className="pt-4 pb-1">
+        <button
+          type="button"
+          onClick={() => setIsBusinessIdentityOpen(!isBusinessIdentityOpen)}
+          className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 uppercase tracking-wider rounded hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group"
+        >
+          <span>Business Identity</span>
+          {isBusinessIdentityOpen ? (
+            <ChevronDown size={15} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+          ) : (
+            <ChevronRight size={15} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+          )}
+        </button>
+      </div>
+
+      {isBusinessIdentityOpen && (
+        <TreeNavContainer>
+          <TreeNavItem
+            href="/dashboard/restaurant"
+            icon={<Building2 size={18} />}
+            isActive={pathname === "/dashboard/restaurant"}
+          >
+            Business Profile
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/hours"
+            icon={<Clock size={18} />}
+            isActive={pathname === "/dashboard/hours"}
+          >
+            Hours
+          </TreeNavItem>
+        </TreeNavContainer>
+      )}
+
+      {/* System Config (Collapsible Click to Open - Positioned Above Menu Dashboard) */}
+      <div className="pt-4 pb-1">
+        <button
+          type="button"
+          onClick={() => setIsSystemConfigOpen(!isSystemConfigOpen)}
+          className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 uppercase tracking-wider rounded hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group"
+        >
+          <span>System Config</span>
+          {isSystemConfigOpen ? (
+            <ChevronDown size={15} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+          ) : (
+            <ChevronRight size={15} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+          )}
+        </button>
+      </div>
+
+      {isSystemConfigOpen && (
+        <TreeNavContainer>
+          <TreeNavItem
+            href="/dashboard/billing"
+            icon={<CreditCard size={18} />}
+            isActive={pathname === "/dashboard/billing"}
+          >
+            Billing & Plans
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/settings"
+            icon={<Settings2 size={18} />}
+            isActive={pathname === "/dashboard/settings"}
+          >
+            General Settings
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/ai-settings"
+            icon={<Bot size={18} />}
+            isActive={pathname === "/dashboard/ai-settings"}
+          >
+            AI Settings
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/ai-logs"
+            icon={<Activity size={18} />}
+            isActive={pathname === "/dashboard/ai-logs"}
+          >
+            AI Observability
+          </TreeNavItem>
+        </TreeNavContainer>
+      )}
+
+      {/* Menu Dashboard (Collapsible Click to Open) */}
+      <div className="pt-4 pb-1">
+        <button
+          type="button"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 uppercase tracking-wider rounded hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group"
+        >
+          <span>Menu Dashboard</span>
+          {isMenuOpen ? (
+            <ChevronDown size={15} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+          ) : (
+            <ChevronRight size={15} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+          )}
+        </button>
+      </div>
+
+      {isMenuOpen && (
+        <TreeNavContainer>
+          <TreeNavItem
+            href="/dashboard/menu/management"
+            icon={<BookOpen size={16} />}
+            isActive={pathname === "/dashboard/menu/management" || pathname === "/dashboard/menu/items"}
+          >
+            Menu Management
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/menu"
+            icon={<LayoutDashboard size={16} />}
+            isActive={pathname === "/dashboard/menu"}
+          >
+            Overview Dashboard
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/menu/categories"
+            icon={<Layers size={16} />}
+            isActive={pathname === "/dashboard/menu/categories"}
+          >
+            Categories
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/menu/add-ons"
+            icon={<PlusCircle size={16} />}
+            isActive={pathname === "/dashboard/menu/add-ons"}
+          >
+            Add-ons
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/menu/modifiers"
+            icon={<SlidersHorizontal size={16} />}
+            isActive={pathname === "/dashboard/menu/modifiers"}
+          >
+            Modifiers
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/menu/combos"
+            icon={<Tag size={16} />}
+            isActive={pathname === "/dashboard/menu/combos"}
+          >
+            Combos & Deals
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/menu/tables"
+            icon={<UtensilsCrossed size={16} />}
+            isActive={pathname === "/dashboard/menu/tables" || pathname === "/dashboard/tables"}
+          >
+            Tables
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/menu/delivery-pickup"
+            icon={<Truck size={16} />}
+            isActive={pathname === "/dashboard/menu/delivery-pickup" || pathname === "/dashboard/delivery-pickup"}
+          >
+            Delivery/Pickup
+          </TreeNavItem>
+        </TreeNavContainer>
+      )}
+
+      {/* CRM & Operations (Collapsible Click to Open) */}
+      <div className="pt-4 pb-1">
+        <button
+          type="button"
+          onClick={() => setIsCrmOpen(!isCrmOpen)}
+          className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 uppercase tracking-wider rounded hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group"
+        >
+          <span>CRM & Operations</span>
+          {isCrmOpen ? (
+            <ChevronDown size={15} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+          ) : (
+            <ChevronRight size={15} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+          )}
+        </button>
+      </div>
+
+      {isCrmOpen && (
+        <TreeNavContainer>
+          <TreeNavItem
+            href="/dashboard/customers"
+            icon={<Users size={18} />}
+            isActive={pathname === "/dashboard/customers"}
+          >
+            Customers
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/orders"
+            icon={<ChefHat size={18} />}
+            isActive={pathname === "/dashboard/orders"}
+          >
+            Orders & KDS
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/reservations"
+            icon={<CalendarCheck size={18} />}
+            isActive={pathname === "/dashboard/reservations"}
+          >
+            Reservations
+          </TreeNavItem>
+        </TreeNavContainer>
+      )}
+    </>
+  );
 
   return (
     <div className="flex h-screen bg-white dark:bg-gray-900">
@@ -43,95 +356,7 @@ export default function DashboardLayout({
           <span className="font-bold">AI Receptionist</span>
         </div>
         <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
-          <Link href="/dashboard" className="flex items-center gap-2 rounded bg-gray-100 dark:bg-gray-700 px-3 py-2 text-sm font-medium">
-            <Home size={18} /> Dashboard
-          </Link>
-          <div className="pt-4 pb-2">
-            <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Business Identity</p>
-          </div>
-          <Link href="/dashboard/restaurant" className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Building2 size={18} /> Business Profile
-          </Link>
-          <Link href="/dashboard/hours" className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Settings size={18} /> Hours
-          </Link>
-          <Link href="/dashboard/tables" className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Settings size={18} /> Tables
-          </Link>
-          <Link href="/dashboard/delivery-pickup" className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Settings size={18} /> Delivery/Pickup
-          </Link>
-
-          {/* Menu Management (Collapsible Click to Open) */}
-          <div className="pt-4 pb-2">
-            <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Menu Management</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="w-full flex items-center justify-between rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
-              <Settings size={18} />
-              <span>Menu Dashboard</span>
-            </div>
-            {isMenuOpen ? (
-              <ChevronDown size={16} className="text-gray-400" />
-            ) : (
-              <ChevronRight size={16} className="text-gray-400" />
-            )}
-          </button>
-
-          {isMenuOpen && (
-            <div className="space-y-1 pl-2 border-l-2 border-gray-200 dark:border-gray-700 ml-4 animate-in fade-in slide-in-from-top-1 duration-150">
-              <Link href="/dashboard/menu" className="flex items-center gap-2 rounded px-3 py-1.5 text-xs font-medium hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600">
-                Overview Dashboard
-              </Link>
-              <Link href="/dashboard/menu/categories" className="flex items-center gap-2 rounded px-3 py-1.5 text-xs font-medium hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600">
-                Categories
-              </Link>
-              <Link href="/dashboard/menu/add-ons" className="flex items-center gap-2 rounded px-3 py-1.5 text-xs font-medium hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600">
-                Add-ons
-              </Link>
-              <Link href="/dashboard/menu/items" className="flex items-center gap-2 rounded px-3 py-1.5 text-xs font-medium hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600">
-                Items & Variants
-              </Link>
-              <Link href="/dashboard/menu/modifiers" className="flex items-center gap-2 rounded px-3 py-1.5 text-xs font-medium hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600">
-                Modifiers
-              </Link>
-              <Link href="/dashboard/menu/combos" className="flex items-center gap-2 rounded px-3 py-1.5 text-xs font-medium hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600">
-                Combos & Deals
-              </Link>
-            </div>
-          )}
-
-          <div className="pt-4 pb-2">
-            <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">System Config</p>
-          </div>
-          <Link href="/dashboard/billing" className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Settings size={18} /> Billing & Plans
-          </Link>
-          <Link href="/dashboard/settings" className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Settings size={18} /> General Settings
-          </Link>
-          <Link href="/dashboard/ai-settings" className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Bot size={18} /> AI Settings
-          </Link>
-          <Link href="/dashboard/ai-logs" className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Settings size={18} /> AI Observability
-          </Link>
-          <div className="pt-4 pb-2">
-            <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">CRM & Operations</p>
-          </div>
-          <Link href="/dashboard/customers" className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-            <User size={18} /> Customers
-          </Link>
-          <Link href="/dashboard/orders" className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-            <Settings size={18} /> Orders & KDS
-          </Link>
-          <Link href="/dashboard/reservations" className="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
-            <User size={18} /> Reservations
-          </Link>
+          {renderNavLinks()}
         </nav>
       </aside>
 
@@ -146,10 +371,8 @@ export default function DashboardLayout({
                 <X size={20} />
               </button>
             </div>
-            <nav className="space-y-1 p-4">
-              <Link href="/dashboard" className="flex items-center gap-2 rounded bg-gray-100 dark:bg-gray-700 px-3 py-2 text-sm font-medium">
-                <Home size={18} /> Dashboard
-              </Link>
+            <nav className="space-y-1 p-4 overflow-y-auto max-h-[calc(100vh-3.5rem)]">
+              {renderNavLinks()}
             </nav>
           </aside>
         </div>

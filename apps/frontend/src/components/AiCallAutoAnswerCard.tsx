@@ -24,10 +24,10 @@ export function AiCallAutoAnswerCard({
 
   return (
     <section
-      className={`p-6 rounded-lg shadow border transition-all duration-200 ${
+      className={`p-6 rounded-2xl shadow-sm border-[2.5px] border-black transition-all duration-200 ${
         isAiActive
-          ? "bg-white border-green-200 ring-1 ring-green-100"
-          : "bg-white border-gray-200"
+          ? "bg-white"
+          : "bg-white opacity-85"
       }`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

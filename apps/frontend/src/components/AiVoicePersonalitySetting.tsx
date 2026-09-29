@@ -35,9 +35,10 @@ import { FAMOUS_100_LANGUAGES, LanguageItem } from "@/constants/famousLanguages"
 
 export type VoiceGender = "female" | "male";
 
-export interface PersonaOption {
+export interface AgentOption {
   id: string;
   name: string;
+  gender: VoiceGender;
   badge: string;
   icon: any;
   tone: string;
@@ -46,87 +47,141 @@ export interface PersonaOption {
   tags: string[];
 }
 
-export const CHARACTER_PERSONAS: PersonaOption[] = [
+export const VOICE_AGENTS: AgentOption[] = [
+  // 6 Female
   {
-    id: "polite",
-    name: "Polite & Courteous",
-    badge: "Most Popular",
-    icon: HeartHandshake,
-    tone: "Courteous & Gracious",
-    description: "Highly respectful, attentive, and gracious. Always includes pleasantries and polite confirmations.",
-    sampleQuote: "Thank you for calling AI Restaurant. It is our pleasure to assist you with your table reservation today.",
-    tags: ["Fine Dining", "Hospitality"],
-  },
-  {
-    id: "humble",
-    name: "Humble & Gentle",
-    badge: "Warm",
+    id: "female_young",
+    name: "Allena (Young & Casual)",
+    gender: "female",
+    badge: "Friendly",
     icon: Smile,
-    tone: "Gentle & Modest",
-    description: "Soft-spoken, modest, and comforting. Creates a cozy, unpretentious, and family-friendly atmosphere.",
-    sampleQuote: "Hello and warm welcome! We are so glad you reached out to us. How may we take good care of you?",
-    tags: ["Family Bistro", "Cozy"],
+    tone: "Relatable & Fresh",
+    description: "Sounds like a friendly young host. Very natural and relatable when taking orders or giving information.",
+    sampleQuote: "Hey there! Thanks for calling the AI Agent. What kind of delicious food can I help you order today?",
+    tags: ["Casual", "Neighborhood"],
   },
   {
-    id: "receptionist",
-    name: "Classic Receptionist",
-    badge: "Recommended",
-    icon: Headset,
-    tone: "Professional & Organized",
-    description: "Crisp, efficient, and direct. Swiftly gathers guest counts, reservation times, and takeaway orders.",
-    sampleQuote: "AI Restaurant front desk. I can book your table or process your takeout order immediately.",
-    tags: ["High Volume", "Efficiency"],
-  },
-  {
-    id: "cheerful",
-    name: "Cheerful & Energetic",
-    badge: "Upbeat",
+    id: "female_energetic",
+    name: "Alexa (Energetic & Upbeat)",
+    gender: "female",
+    badge: "High Energy",
     icon: Sun,
     tone: "Enthusiastic & Vibrant",
-    description: "Bright, energetic, and welcoming. Infuses every interaction with positivity and excitement.",
-    sampleQuote: "Hey there! Happy to hear from you today! What delicious dishes can we get prepared for you?",
-    tags: ["Brunch Spot", "Cafe"],
+    description: "Fast-paced and bright. Brings a lot of energy to the conversation, perfect for a busy brunch spot.",
+    sampleQuote: "Hi! Welcome to the AI Agent! I'm super excited to help you get your table reserved!",
+    tags: ["Brunch", "Vibrant"],
   },
   {
-    id: "calm",
-    name: "Calm & Soothing",
-    badge: "Relaxing",
+    id: "female_mature",
+    name: "Samantha (40+ Mature)",
+    gender: "female",
+    badge: "Grounded",
     icon: Coffee,
-    tone: "Patient & Relaxing",
-    description: "Unrushed, serene, and patient. Great at soothing stressed callers and carefully taking complex dietary requests.",
-    sampleQuote: "Good evening. Please take all the time you need, and I will gladly guide you through our menu.",
-    tags: ["Lounge", "Dinner Rush"],
+    tone: "Calm & Wise",
+    description: "A warm, experienced, and patient voice. Takes time carefully listening and gives clear, wise information.",
+    sampleQuote: "Good evening. Take your time, and I will be more than happy to guide you through our menu and reservations.",
+    tags: ["Experienced", "Patient"],
   },
   {
-    id: "formal",
-    name: "Formal & Elegant",
-    badge: "Luxury",
-    icon: Crown,
-    tone: "Sophisticated & Prestigious",
-    description: "Distinguished vocabulary, refined cadence, and elevated manners designed for upscale establishments.",
-    sampleQuote: "Good day. Welcome to the reservation concierge. May I arrange an exceptional table for your party?",
-    tags: ["Michelin Star", "Steakhouse"],
+    id: "female_receptionist",
+    name: "Rachel (Classic Receptionist)",
+    gender: "female",
+    badge: "Recommended",
+    icon: Headset,
+    tone: "Crisp & Efficient",
+    description: "Highly organized and direct. Swiftly gathers guest counts and provides exact reservation details without fluff.",
+    sampleQuote: "AI Agent front desk. Please provide your party size and preferred time, and I will confirm your booking immediately.",
+    tags: ["Efficient", "Direct"],
   },
   {
-    id: "casual",
-    name: "Casual & Friendly",
-    badge: "Approachable",
+    id: "female_polite",
+    name: "Victoria (Polite & Courteous)",
+    gender: "female",
+    badge: "Hospitality",
+    icon: HeartHandshake,
+    tone: "Respectful & Gracious",
+    description: "Highly respectful with elevated manners. Perfect for providing a warm, hospitable experience to every guest.",
+    sampleQuote: "Thank you so much for calling the AI Agent. It would be my absolute pleasure to assist you today.",
+    tags: ["Fine Dining", "Gracious"],
+  },
+  {
+    id: "female_robust",
+    name: "Olivia (Robust & Authoritative)",
+    gender: "female",
+    badge: "Confident",
     icon: Shield,
-    tone: "Conversational & Natural",
-    description: "Down-to-earth and relatable, like speaking with your favorite friendly neighborhood server.",
-    sampleQuote: "Hi! Thanks for calling in. Looking to grab a table or order some delicious food tonight?",
-    tags: ["Neighborhood", "Pub & Grill"],
+    tone: "Strong & Sophisticated",
+    description: "A strong, confident, and formal presence. Gives out information with robust clarity and undeniable authority.",
+    sampleQuote: "Good day. I am the AI Agent concierge. I will ensure your arrangements are handled with the utmost precision.",
+    tags: ["Formal", "Bold"],
+  },
+  // 6 Male
+  {
+    id: "male_young",
+    name: "David (Young & Casual)",
+    gender: "male",
+    badge: "Friendly",
+    icon: Smile,
+    tone: "Relatable & Fresh",
+    description: "Sounds like a friendly young host. Very natural and relatable when taking orders or giving information.",
+    sampleQuote: "Hey there! Thanks for calling the AI Agent. What kind of delicious food can I help you order today?",
+    tags: ["Casual", "Neighborhood"],
   },
   {
-    id: "upseller",
-    name: "Persuasive & Appetizing",
-    badge: "Sales Focused",
-    icon: Flame,
-    tone: "Appetizing & Descriptive",
-    description: "Lively culinary enthusiast who vividly describes chef specials, wine pairings, and signature desserts.",
-    sampleQuote: "Welcome! Our chef prepared a stunning truffle ribeye special tonight. Let's get your table secured!",
-    tags: ["Upselling", "Specials"],
+    id: "male_energetic",
+    name: "Alex (Energetic & Upbeat)",
+    gender: "male",
+    badge: "High Energy",
+    icon: Sun,
+    tone: "Enthusiastic & Vibrant",
+    description: "Fast-paced and bright. Brings a lot of energy to the conversation, perfect for a busy brunch spot.",
+    sampleQuote: "Hi! Welcome to the AI Agent! I'm super excited to help you get your table reserved!",
+    tags: ["Brunch", "Vibrant"],
   },
+  {
+    id: "male_mature",
+    name: "George (40+ Mature)",
+    gender: "male",
+    badge: "Grounded",
+    icon: Coffee,
+    tone: "Calm & Wise",
+    description: "A warm, experienced, and patient voice. Takes time carefully listening and gives clear, wise information.",
+    sampleQuote: "Good evening. Take your time, and I will be more than happy to guide you through our menu and reservations.",
+    tags: ["Experienced", "Patient"],
+  },
+  {
+    id: "male_receptionist",
+    name: "Daniel (Classic Receptionist)",
+    gender: "male",
+    badge: "Recommended",
+    icon: Headset,
+    tone: "Crisp & Efficient",
+    description: "Highly organized and direct. Swiftly gathers guest counts and provides exact reservation details without fluff.",
+    sampleQuote: "AI Agent front desk. Please provide your party size and preferred time, and I will confirm your booking immediately.",
+    tags: ["Efficient", "Direct"],
+  },
+  {
+    id: "male_polite",
+    name: "James (Polite & Courteous)",
+    gender: "male",
+    badge: "Hospitality",
+    icon: HeartHandshake,
+    tone: "Respectful & Gracious",
+    description: "Highly respectful with elevated manners. Perfect for providing a warm, hospitable experience to every guest.",
+    sampleQuote: "Thank you so much for calling the AI Agent. It would be my absolute pleasure to assist you today.",
+    tags: ["Fine Dining", "Gracious"],
+  },
+  {
+    id: "male_robust",
+    name: "Marcus (Robust & Authoritative)",
+    gender: "male",
+    badge: "Confident",
+    icon: Shield,
+    tone: "Strong & Sophisticated",
+    description: "A strong, confident, and formal presence. Gives out information with robust clarity and undeniable authority.",
+    sampleQuote: "Good day. I am the AI Agent concierge. I will ensure your arrangements are handled with the utmost precision.",
+    tags: ["Formal", "Bold"],
+  }
 ];
 
 export const SPEED_LEVELS = [
@@ -151,24 +206,21 @@ export const PITCH_DESCRIPTIONS: { [key: number]: { label: string; desc: string 
 };
 
 interface AiVoicePersonalitySettingProps {
-  initialGender?: VoiceGender;
+  initialAgentId?: string;
   initialSpeed?: number;
   initialPitch?: number;
-  initialPersonaId?: string;
   onChange?: (config: any) => void;
 }
 
 export function AiVoicePersonalitySetting({
-  initialGender = "female",
+  initialAgentId = "female_receptionist",
   initialSpeed = 3,
   initialPitch = 5,
-  initialPersonaId = "receptionist",
   onChange,
 }: AiVoicePersonalitySettingProps) {
-  const [gender, setGender] = useState<VoiceGender>(initialGender);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>(initialAgentId);
   const [speed, setSpeed] = useState<number>(initialSpeed);
   const [pitch, setPitch] = useState<number>(initialPitch);
-  const [selectedPersonaId, setSelectedPersonaId] = useState<string>(initialPersonaId);
 
   // Multilingual State: 100 Famous Languages & Active Selection
   const [isMultilingualActive, setIsMultilingualActive] = useState<boolean>(true);
@@ -178,7 +230,6 @@ export function AiVoicePersonalitySetting({
   ]);
   const [activeLanguageId, setActiveLanguageId] = useState<string>("en-US");
 
-  // Language Picker / Drawer state
   const [showLanguagePicker, setShowLanguagePicker] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedRegion, setSelectedRegion] = useState<string>("ALL");
@@ -187,8 +238,47 @@ export function AiVoicePersonalitySetting({
   const [copied, setCopied] = useState<boolean>(false);
   const [showJson, setShowJson] = useState<boolean>(false);
 
-  const currentPersona =
-    CHARACTER_PERSONAS.find((p) => p.id === selectedPersonaId) || CHARACTER_PERSONAS[2];
+  // --- SAVE / REVERT STATE ---
+  const [savedState, setSavedState] = useState({
+    selectedAgentId: initialAgentId,
+    speed: initialSpeed,
+    pitch: initialPitch,
+    isMultilingualActive: true,
+    selectedLanguageIds: ["en-US", "es-ES"],
+    activeLanguageId: "en-US",
+  });
+
+  const hasUnsavedChanges = 
+    selectedAgentId !== savedState.selectedAgentId ||
+    speed !== savedState.speed ||
+    pitch !== savedState.pitch ||
+    isMultilingualActive !== savedState.isMultilingualActive ||
+    activeLanguageId !== savedState.activeLanguageId ||
+    JSON.stringify(selectedLanguageIds) !== JSON.stringify(savedState.selectedLanguageIds);
+
+  const handleSave = () => {
+    setSavedState({
+      selectedAgentId,
+      speed,
+      pitch,
+      isMultilingualActive,
+      selectedLanguageIds,
+      activeLanguageId,
+    });
+  };
+
+  const handleRevert = () => {
+    setSelectedAgentId(savedState.selectedAgentId);
+    setSpeed(savedState.speed);
+    setPitch(savedState.pitch);
+    setIsMultilingualActive(savedState.isMultilingualActive);
+    setSelectedLanguageIds(savedState.selectedLanguageIds);
+    setActiveLanguageId(savedState.activeLanguageId);
+  };
+
+
+  const currentAgent =
+    VOICE_AGENTS.find((p) => p.id === selectedAgentId) || VOICE_AGENTS[3];
 
   // Resolve selected language objects from 100 languages pool
   const selectedLanguages = useMemo(() => {
@@ -229,7 +319,7 @@ export function AiVoicePersonalitySetting({
 
   // Build JSON configuration
   const buildConfig = () => ({
-    voice_gender: gender,
+    voice_gender: currentAgent.gender,
     voice_speed: {
       level: speed,
       playback_rate: 0.7 + speed * 0.1,
@@ -242,10 +332,10 @@ export function AiVoicePersonalitySetting({
       multiplier: 0.5 + pitch * 0.1,
     },
     character_persona: {
-      id: currentPersona.id,
-      name: currentPersona.name,
-      tone: currentPersona.tone,
-      sample_greeting: currentPersona.sampleQuote,
+      id: currentAgent.id,
+      name: currentAgent.name,
+      tone: currentAgent.tone,
+      sample_greeting: currentAgent.sampleQuote,
     },
     multilingual: {
       is_active: isMultilingualActive,
@@ -269,10 +359,10 @@ export function AiVoicePersonalitySetting({
     supported_languages: selectedLanguages.map((l) => l.name),
   });
 
-  // Notify parent on changes
+  // Notify parent ONLY when savedState changes
   useEffect(() => {
     onChange?.(buildConfig());
-  }, [gender, speed, pitch, selectedPersonaId, selectedLanguageIds, activeLanguageId, isMultilingualActive]);
+  }, [savedState]);
 
   // Handle adding a language
   const handleAddLanguage = (lang: LanguageItem, makeActive: boolean = false) => {
@@ -323,7 +413,7 @@ export function AiVoicePersonalitySetting({
 
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(currentPersona.sampleQuote);
+    const utterance = new SpeechSynthesisUtterance(currentAgent.sampleQuote);
     utterance.rate = 0.7 + speed * 0.1;
     utterance.pitch = 0.5 + pitch * 0.1;
 
@@ -338,7 +428,7 @@ export function AiVoicePersonalitySetting({
       const match = voices.find((v) => {
         const nameLower = v.name.toLowerCase();
         const matchesGender =
-          gender === "female"
+          currentAgent.gender === "female"
             ? nameLower.includes("female") ||
               nameLower.includes("zira") ||
               nameLower.includes("samantha") ||
@@ -368,22 +458,22 @@ export function AiVoicePersonalitySetting({
   };
 
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      {/* Header Banner */}
-      <div className="p-5 sm:p-6 border-b border-gray-100 bg-gradient-to-r from-slate-50 via-white to-blue-50/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <section className="space-y-3">
+      {/* STEP 4 HEADER (OUTSIDE THE BOX) */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
         <div className="flex items-start sm:items-center gap-3">
-          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl shrink-0">
-            <Mic size={24} />
+          <div className="p-2.5 bg-black text-white rounded-xl shadow-xs shrink-0">
+            <Mic size={22} />
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded bg-blue-600 text-white shadow-xs">
+              <span className="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded bg-black text-white shadow-xs">
                 Step 4
               </span>
-              <h2 className="text-lg font-bold text-gray-900">
+              <h2 className="text-lg font-extrabold text-gray-950">
                 Voice &amp; Personality Engine
               </h2>
-              <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+              <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-100 text-blue-800 border border-blue-300">
                 Voice Assistant Persona
               </span>
             </div>
@@ -393,128 +483,128 @@ export function AiVoicePersonalitySetting({
           </div>
         </div>
 
-        {/* Live Audio Preview Trigger */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handlePlayPreview}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition shadow-sm ${
-              isPlaying
-                ? "bg-amber-600 hover:bg-amber-700 text-white animate-pulse"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
-          >
-            {isPlaying ? (
-              <>
-                <Square size={16} className="fill-current" />
-                <span>Stop Preview</span>
-              </>
-            ) : (
-              <>
-                <Play size={16} className="fill-current" />
-                <span>Test Voice Sample</span>
-              </>
-            )}
-          </button>
-        </div>
+
       </div>
 
-      <div className="p-5 sm:p-6 space-y-8">
+      {/* STEP 4 PROMINENT BOX WITH FAT BLACK LINE (Now changed to separate boxes) */}
+      <div className="space-y-6">
         {/* ======================================================== */}
         {/* 1. GENDER TABS & RADIO BUTTONS                           */}
         {/* ======================================================== */}
-        <div>
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Radio size={16} className="text-blue-600" />
               <label className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-                1. Voice Gender Selection
+                1. Voice Agent Selection (12 Agents)
               </label>
             </div>
-            <span className="text-xs text-gray-500">Select preferred vocal identity</span>
+            <span className="text-xs text-gray-500">Select your preferred vocal identity</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Female Tab / Radio */}
-            <label
-              onClick={() => setGender("female")}
-              className={`relative flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                gender === "female"
-                  ? "border-blue-600 bg-blue-50/50 shadow-sm"
-                  : "border-gray-200 hover:border-gray-300 bg-white"
-              }`}
-            >
-              <div className="flex items-center gap-3.5">
-                <input
-                  type="radio"
-                  name="voice_gender"
-                  value="female"
-                  checked={gender === "female"}
-                  onChange={() => setGender("female")}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
-                />
-                <div className="w-10 h-10 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-base shadow-inner">
-                  👩
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                    Female Voice
-                    {gender === "female" && (
-                      <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-600 text-white rounded-full">
-                        Active
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Warm, melodic, and empathetic conversational tone
-                  </p>
-                </div>
-              </div>
-            </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 mt-4">
+            {VOICE_AGENTS.map((agent) => {
+              const isSelected = selectedAgentId === agent.id;
+              const IconComponent = agent.icon;
 
-            {/* Male Tab / Radio */}
-            <label
-              onClick={() => setGender("male")}
-              className={`relative flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                gender === "male"
-                  ? "border-blue-600 bg-blue-50/50 shadow-sm"
-                  : "border-gray-200 hover:border-gray-300 bg-white"
-              }`}
-            >
-              <div className="flex items-center gap-3.5">
-                <input
-                  type="radio"
-                  name="voice_gender"
-                  value="male"
-                  checked={gender === "male"}
-                  onChange={() => setGender("male")}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
-                />
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-base shadow-inner">
-                  👨
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                    Male Voice
-                    {gender === "male" && (
-                      <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-600 text-white rounded-full">
-                        Active
+              return (
+                <label
+                  key={agent.id}
+                  className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    isSelected
+                      ? "border-blue-600 bg-blue-50/40 shadow-sm ring-2 ring-blue-100"
+                      : "border-gray-200 hover:border-blue-300 hover:shadow-sm bg-white"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="voice_agent"
+                          value={agent.id}
+                          checked={isSelected}
+                          onChange={() => setSelectedAgentId(agent.id)}
+                          className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <div
+                          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                            isSelected ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          <IconComponent size={18} />
+                        </div>
+                      </div>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                          isSelected
+                            ? "bg-blue-100 text-blue-800 border-blue-200"
+                            : "bg-gray-100 text-gray-600 border-gray-200"
+                        }`}
+                      >
+                        {agent.badge}
                       </span>
-                    )}
+                    </div>
+
+                    <h3 className="text-sm font-bold text-gray-900 leading-tight">
+                      {agent.name}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[11px] font-medium text-blue-600">
+                        {agent.tone}
+                      </span>
+                      <span className="text-[10px] text-gray-400">•</span>
+                      <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">
+                        {agent.gender}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                      {agent.description}
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Clear, grounded, and authoritative welcoming presence
-                  </p>
-                </div>
+
+                  <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between">
+                    <div className="flex flex-wrap gap-1">
+                      {agent.tags.map((t) => (
+                        <span
+                          key={t}
+                          className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-medium"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+
+          {/* Active Agent Quote Preview Box */}
+          <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
+                <Volume2 size={20} />
               </div>
-            </label>
+              <div>
+                <div className="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <span>Current Sample Phrase</span>
+                  <span className="text-blue-500">•</span>
+                  <span className="font-semibold text-blue-700">{currentAgent.name}</span>
+                </div>
+                <p className="text-sm text-gray-800 font-medium italic mt-0.5">
+                  &ldquo;{currentAgent.sampleQuote}&rdquo;
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* ======================================================== */}
         {/* 2. VOICE SPEED (SELECTABLE SPEED 1 TO 5)                */}
         {/* ======================================================== */}
-        <div className="pt-2 border-t border-gray-100">
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Gauge size={16} className="text-blue-600" />
@@ -567,31 +657,12 @@ export function AiVoicePersonalitySetting({
             })}
           </div>
 
-          {/* Range Slider Track */}
-          <div className="mt-4 px-2">
-            <div className="flex justify-between text-xs text-gray-400 mb-1 font-medium">
-              <span>1 (Very Slow 0.8x)</span>
-              <span>2 (Relaxed 0.9x)</span>
-              <span className="text-blue-600 font-bold">3 (Normal 1.0x)</span>
-              <span>4 (Brisk 1.15x)</span>
-              <span>5 (Fast 1.3x)</span>
-            </div>
-            <input
-              type="range"
-              min={1}
-              max={5}
-              step={1}
-              value={speed}
-              onChange={(e) => setSpeed(parseInt(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-            />
-          </div>
         </div>
 
         {/* ======================================================== */}
         {/* 3. VOICE PITCH (SELECTABLE LINE 1 TO 10: THIN TO HEAVY) */}
         {/* ======================================================== */}
-        <div className="pt-2 border-t border-gray-100">
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
             <div className="flex items-center gap-2">
               <Music2 size={16} className="text-blue-600" />
@@ -661,16 +732,7 @@ export function AiVoicePersonalitySetting({
               </div>
             </div>
 
-            {/* Slider sync */}
-            <input
-              type="range"
-              min={1}
-              max={10}
-              step={1}
-              value={pitch}
-              onChange={(e) => setPitch(parseInt(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 mt-2"
-            />
+
 
             <div className="mt-3 p-2.5 bg-white border border-gray-200 rounded-lg flex items-center justify-between text-xs">
               <span className="text-gray-600">
@@ -683,137 +745,17 @@ export function AiVoicePersonalitySetting({
           </div>
         </div>
 
+                {/* ======================================================== */}
+        {/* 4. 100 FAMOUS LANGUAGES, MAKE ACTIVE & DISPLAY SELECTED */}
         {/* ======================================================== */}
-        {/* 4. 8 CHARACTER VOICES / PERSONAS                        */}
-        {/* ======================================================== */}
-        <div className="pt-2 border-t border-gray-100">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-blue-600" />
-              <label className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-                4. Restaurant Character Voice Personas (8 Archetypes)
-              </label>
-            </div>
-            <span className="text-xs text-gray-500">Pick personality style for calls</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
-            {CHARACTER_PERSONAS.map((persona) => {
-              const isSelected = selectedPersonaId === persona.id;
-              const IconComponent = persona.icon;
-
-              return (
-                <div
-                  key={persona.id}
-                  onClick={() => setSelectedPersonaId(persona.id)}
-                  className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                    isSelected
-                      ? "border-blue-600 bg-blue-50/40 shadow-sm ring-2 ring-blue-100"
-                      : "border-gray-200 hover:border-blue-300 hover:shadow-sm bg-white"
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
-                          isSelected ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"
-                        }`}
-                      >
-                        <IconComponent size={18} />
-                      </div>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                          isSelected
-                            ? "bg-blue-100 text-blue-800 border-blue-200"
-                            : "bg-gray-100 text-gray-600 border-gray-200"
-                        }`}
-                      >
-                        {persona.badge}
-                      </span>
-                    </div>
-
-                    <h3 className="text-sm font-bold text-gray-900 leading-tight">
-                      {persona.name}
-                    </h3>
-                    <div className="text-[11px] font-medium text-blue-600 mt-0.5">
-                      {persona.tone}
-                    </div>
-
-                    <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                      {persona.description}
-                    </p>
-                  </div>
-
-                  <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1">
-                      {persona.tags.map((t) => (
-                        <span
-                          key={t}
-                          className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-medium"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                    <div
-                      className={`w-4 h-4 rounded-full border flex items-center justify-center text-[10px] transition-colors ${
-                        isSelected
-                          ? "bg-blue-600 border-blue-600 text-white"
-                          : "border-gray-300 bg-white"
-                      }`}
-                    >
-                      {isSelected && <Check size={10} strokeWidth={3} />}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Active Persona Quote Preview Box */}
-          <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
-                <Volume2 size={20} />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <span>Current Sample Phrase</span>
-                  <span className="text-blue-500">•</span>
-                  <span className="font-semibold text-blue-700">{currentPersona.name}</span>
-                </div>
-                <p className="text-sm text-gray-800 font-medium italic mt-0.5">
-                  &ldquo;{currentPersona.sampleQuote}&rdquo;
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handlePlayPreview}
-              className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition ${
-                isPlaying
-                  ? "bg-amber-600 text-white hover:bg-amber-700"
-                  : "bg-white text-blue-700 border border-blue-300 hover:bg-blue-50"
-              }`}
-            >
-              {isPlaying ? <Square size={12} className="fill-current" /> : <Play size={12} className="fill-current" />}
-              <span>{isPlaying ? "Stop" : "Listen"}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* ======================================================== */}
-        {/* 5. 100 FAMOUS LANGUAGES, MAKE ACTIVE & DISPLAY SELECTED */}
-        {/* ======================================================== */}
-        <div className="pt-2 border-t border-gray-100">
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm">
           {/* Header Row with Active Toggle */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <div className="flex items-center gap-2">
                 <Globe size={18} className="text-blue-600" />
                 <label className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-                  5. Multilingual Engine (100 Famous World Languages)
+                  4. Multilingual Engine (100 Famous World Languages)
                 </label>
                 <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-800 rounded-full border border-blue-200">
                   100 Languages Pool
@@ -983,7 +925,7 @@ export function AiVoicePersonalitySetting({
                       World 100 Famous Languages Directory
                     </h3>
                     <p className="text-xs text-gray-500">
-                      Click &quot;+ Add&quot; or &quot;Make Active&quot; on any language below to activate it in the restaurant voice pool.
+                      Click &quot;+ Add&quot; or &quot;Make Active&quot; on any language below to activate it in the agent voice pool.
                     </p>
                   </div>
                 </div>
@@ -1138,7 +1080,7 @@ export function AiVoicePersonalitySetting({
         {/* ======================================================== */}
         {/* 6. LIVE JSON TELEPHONY CONFIGURATION                    */}
         {/* ======================================================== */}
-        <div className="pt-2 border-t border-gray-100">
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <button
               type="button"
@@ -1178,6 +1120,43 @@ export function AiVoicePersonalitySetting({
           )}
         </div>
       </div>
+
+      {/* FLOATING ACTION BAR */}
+      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-200">
+        <button
+          onClick={handlePlayPreview}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm ${
+            isPlaying ? "bg-amber-600 text-white animate-pulse" : "bg-black text-white hover:bg-gray-800"
+          }`}
+        >
+          {isPlaying ? <Square size={16} className="fill-current" /> : <Play size={16} className="fill-current" />}
+          {isPlaying ? "Stop" : "Test Voice"}
+        </button>
+
+        {hasUnsavedChanges && (
+          <button
+            onClick={handleRevert}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all border border-red-100"
+          >
+            <X size={16} />
+            Revert
+          </button>
+        )}
+
+        <button
+          onClick={handleSave}
+          disabled={!hasUnsavedChanges}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm ${
+            hasUnsavedChanges
+              ? "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5"
+              : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 shadow-none"
+          }`}
+        >
+          <Check size={16} />
+          {hasUnsavedChanges ? "Save Changes" : "Saved"}
+        </button>
+      </div>
+
     </section>
   );
 }

@@ -96,6 +96,8 @@ model BusinessHours {
   openTime    String?   // "09:00"
   closeTime   String?   // "22:00"
   isClosed    Boolean  @default(false)
+  name        String?   // e.g. "Eid-ul-Fitr", "New Year's Day", "Renovation"
+  notes       String?   // Custom AI announcement/instructions for callers
   
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)

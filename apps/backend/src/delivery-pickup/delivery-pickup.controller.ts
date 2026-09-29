@@ -34,4 +34,22 @@ export class DeliveryPickupController {
     const updated = await this.service.updatePickupSettings(req.tenantId!, data);
     return { success: true, data: updated };
   }
+
+  @Get('config')
+  async getFullConfig(@Req() req: TenantRequest) {
+    const data = await this.service.getFullConfig(req.tenantId!);
+    return { success: true, tenantId: req.tenantId, data };
+  }
+
+  @Put('config')
+  async saveFullConfig(@Req() req: TenantRequest, @Body() data: any) {
+    const result = await this.service.saveFullConfig(req.tenantId!, data);
+    return result;
+  }
+
+  @Get('ai-context')
+  async getAiContext(@Req() req: TenantRequest) {
+    const data = await this.service.getAiFulfillmentContext(req.tenantId!);
+    return { success: true, data };
+  }
 }

@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@ai-restaurant/ui";
 import { ChevronRight, Plus, Settings2, Trash2, X } from "lucide-react";
+import {
+  MenuItem,
+  getStoredMenuItems,
+  onMenuItemsUpdated,
+  calculateCategoryItemCount
+} from "@/lib/menu-store";
 
 type Category = {
   id: string;
@@ -60,6 +66,14 @@ export default function CategoriesPage() {
     }
     return INITIAL_CATEGORIES;
   });
+
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+
+  useEffect(() => {
+    setMenuItems(getStoredMenuItems());
+    const unsub = onMenuItemsUpdated((items) => setMenuItems(items));
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("menu_categories", JSON.stringify(categories));
@@ -262,7 +276,7 @@ export default function CategoriesPage() {
                             {cat.name}
                           </div>
                           <div className="text-xs text-gray-400 mt-0.5">
-                            {cat.itemCount} items
+                            {calculateCategoryItemCount(cat.name, menuItems)} items
                             {cat.sku && <span className="ml-1 text-gray-500 font-medium tracking-wide border-l border-gray-300 pl-1">SKU: {cat.sku}</span>}
                           </div>
                         </>

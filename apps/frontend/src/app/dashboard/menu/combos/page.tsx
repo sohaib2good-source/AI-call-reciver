@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@ai-restaurant/ui";
 import { Plus, Trash2, X } from "lucide-react";
+import { getStoredMenuItems, onMenuItemsUpdated } from "@/lib/menu-store";
 
 type ComboItem = {
   id: string;
@@ -58,10 +59,11 @@ export default function CombosPage() {
   }, [combos]);
 
   useEffect(() => {
-    const savedItems = localStorage.getItem("menu_items");
-    if (savedItems) {
-      try { setAvailableMenuItems(JSON.parse(savedItems)); } catch(e){}
-    }
+    setAvailableMenuItems(getStoredMenuItems());
+    const unsub = onMenuItemsUpdated((updatedItems) => {
+      setAvailableMenuItems(updatedItems);
+    });
+    return () => unsub();
   }, []);
 
   const openModal = (combo?: Combo) => {
