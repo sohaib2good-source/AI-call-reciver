@@ -16,6 +16,7 @@ import { OrderModule } from './order/order.module';
 import { AiCoreModule } from './ai-core/ai-core.module';
 import { VoiceModule } from './voice/voice.module';
 import { BillingModule } from './billing/billing.module';
+import { WhatsappModule } from './whatsapp/whatsapp.module';
 
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
@@ -46,6 +47,7 @@ import { UsersModule } from './users/users.module';
     AiCoreModule,
     VoiceModule,
     BillingModule,
+    WhatsappModule,
   ],
   controllers: [],
   providers: [],

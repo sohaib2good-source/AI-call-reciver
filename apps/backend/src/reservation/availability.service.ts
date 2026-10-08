@@ -31,7 +31,7 @@ export class AvailabilityService {
     });
 
     // 3. Generate slots (e.g., every 30 mins)
-    const slots = [];
+    const slots: any[] = [];
     const openTime = 11; // 11 AM
     const closeTime = 22; // 10 PM
     

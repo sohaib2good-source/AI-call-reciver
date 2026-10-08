@@ -19,5 +19,8 @@ import { AiSettingsController } from './ai-settings.controller';
     MemoryManager,
     OpenAIService
   ],
+  exports: [
+    OpenAIService
+  ],
 })
 export class AiCoreModule {}
