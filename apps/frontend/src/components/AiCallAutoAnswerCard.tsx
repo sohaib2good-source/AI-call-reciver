@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { PhoneCall, PhoneOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { PhoneCall, PhoneOff, Sliders, ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 
 interface AiCallAutoAnswerCardProps {
   initialActive?: boolean;
@@ -15,11 +15,34 @@ export function AiCallAutoAnswerCard({
   onToggle,
 }: AiCallAutoAnswerCardProps) {
   const [isAiActive, setIsAiActive] = useState(initialActive);
+  const [showJson, setShowJson] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (initialActive !== undefined) {
+      setIsAiActive(initialActive);
+    }
+  }, [initialActive]);
 
   const handleToggle = () => {
     const nextState = !isAiActive;
     setIsAiActive(nextState);
     onToggle?.(nextState);
+  };
+
+  const jsonConfig = {
+    call_handling_policy: {
+      auto_answer_enabled: isAiActive,
+      strategy: isAiActive ? "AUTOMATED_AI_RECEPTIONIST" : "DIRECT_STAFF_FORWARDING",
+      supported_workflows: isAiActive ? ["FOOD_ORDERING", "TABLE_RESERVATIONS", "FAQ_INQUIRIES"] : [],
+      fallback_destination: "STAFF_PHONE_LINE"
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(JSON.stringify(jsonConfig, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -118,6 +141,47 @@ export function AiCallAutoAnswerCard({
             </span>
           </div>
         )}
+
+        {/* Collapsible JSON Schema (Default OFF) */}
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setShowJson(!showJson)}
+              className="text-xs font-semibold text-gray-600 hover:text-gray-900 flex items-center gap-1.5 transition"
+            >
+              <Sliders size={13} className="text-gray-500" />
+              <span>Call Handling Policy Schema (JSON)</span>
+              {showJson ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            </button>
+
+            {showJson && (
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              >
+                {copied ? (
+                  <>
+                    <Check size={12} className="text-green-600" />
+                    <span className="text-green-600">Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={12} />
+                    <span>Copy Schema</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          {showJson && (
+            <pre className="mt-2.5 p-3.5 bg-slate-900 text-slate-100 text-xs rounded-xl overflow-x-auto font-mono leading-relaxed border border-slate-800">
+              {JSON.stringify(jsonConfig, null, 2)}
+            </pre>
+          )}
+        </div>
       </div>
     </section>
   );

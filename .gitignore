@@ -34,3 +34,11 @@ pnpm-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Binaries & Tooling
+cloudflared.exe
+*.exe
+
+# Runtime Data Logs & Temp Files
+apps/frontend/data/whatsapp-logs.json
+*.png

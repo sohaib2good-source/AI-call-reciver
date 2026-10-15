@@ -1,0 +1,17 @@
+{
+  "phoneNumberId": "1284705801403358",
+  "businessAccountId": "1689894745896050",
+  "displayPhoneNumber": "+92 334 9779285",
+  "accessToken": "",
+  "verifyToken": "my_super_secret_verify_token_123",
+  "autoPickCalls": true,
+  "voiceRepliesEnabled": true,
+  "greetingMode": "compiled",
+  "whisperTranscriptionEnabled": true,
+  "elevenLabsTtsEnabled": true,
+  "selectedPersonaId": "female_receptionist",
+  "transferPhoneNumber": "+1 (555) 019-2834",
+  "status": "connected",
+  "lastVerifiedAt": "2026-10-13T11:00:00.000Z",
+  "updatedAt": "2026-10-13T11:00:00.000Z"
+}

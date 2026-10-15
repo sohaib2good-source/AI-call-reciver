@@ -1,0 +1,23 @@
+{
+  "businessName": "biryani master link road",
+  "legalName": "Grand AI Cafe LLC",
+  "description": "A futuristic dining and reception experience powered by conversational AI.",
+  "specialtyValue": "International",
+  "phone": "+1 234 567 8900",
+  "email": "hello@grandai.cafe",
+  "website": "https://grandai.cafe",
+  "addressStreet": "123 AI Boulevard",
+  "addressCity": "San Francisco",
+  "addressState": "CA",
+  "addressZip": "94103",
+  "addressCountry": "USA",
+  "selectedIndustries": [
+    "restaurant"
+  ],
+  "selectedCapabilities": [
+    "order_taker",
+    "reservation",
+    "book_appointment"
+  ],
+  "updatedAt": "2026-10-13T09:33:10.369Z"
+}

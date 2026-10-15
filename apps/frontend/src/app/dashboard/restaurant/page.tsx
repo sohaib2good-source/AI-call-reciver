@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@ai-restaurant/ui";
 import {
   Building2,
@@ -22,7 +22,15 @@ import {
   Headphones,
   Briefcase,
   Layers,
+  Database,
 } from "lucide-react";
+import {
+  getStoredBusinessProfile,
+  saveStoredBusinessProfile,
+  fetchServerBusinessProfile,
+  onBusinessProfileUpdated,
+  BusinessProfileState,
+} from "@/lib/business-profile-store";
 
 interface IndustryOption {
   id: string;
@@ -156,36 +164,134 @@ const AGENT_CAPABILITIES: AgentCapabilityOption[] = [
 ];
 
 export default function BusinessProfilePage() {
-  // Business Organization Info
-  const [businessName, setBusinessName] = useState<string>("The Grand AI Cafe");
-  const [legalName, setLegalName] = useState<string>("Grand AI Cafe LLC");
-  const [description, setDescription] = useState<string>(
-    "A futuristic dining and reception experience powered by conversational AI."
-  );
-  const [specialtyValue, setSpecialtyValue] = useState<string>("International");
-  const [phone, setPhone] = useState<string>("+1 234 567 8900");
-  const [email, setEmail] = useState<string>("hello@grandai.cafe");
-  const [website, setWebsite] = useState<string>("https://grandai.cafe");
+  // Business Organization Info - lazy initialized from persistent store
+  const [businessName, setBusinessName] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().businessName;
+    return "The Grand AI Cafe";
+  });
+  const [legalName, setLegalName] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().legalName;
+    return "Grand AI Cafe LLC";
+  });
+  const [description, setDescription] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().description;
+    return "A futuristic dining and reception experience powered by conversational AI.";
+  });
+  const [specialtyValue, setSpecialtyValue] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().specialtyValue;
+    return "International";
+  });
+  const [phone, setPhone] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().phone;
+    return "+1 234 567 8900";
+  });
+  const [email, setEmail] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().email;
+    return "hello@grandai.cafe";
+  });
+  const [website, setWebsite] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().website;
+    return "https://grandai.cafe";
+  });
 
   // Address Info
-  const [addressStreet, setAddressStreet] = useState<string>("123 AI Boulevard");
-  const [addressCity, setAddressCity] = useState<string>("San Francisco");
-  const [addressState, setAddressState] = useState<string>("CA");
-  const [addressZip, setAddressZip] = useState<string>("94103");
-  const [addressCountry, setAddressCountry] = useState<string>("USA");
+  const [addressStreet, setAddressStreet] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().addressStreet;
+    return "123 AI Boulevard";
+  });
+  const [addressCity, setAddressCity] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().addressCity;
+    return "San Francisco";
+  });
+  const [addressState, setAddressState] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().addressState;
+    return "CA";
+  });
+  const [addressZip, setAddressZip] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().addressZip;
+    return "94103";
+  });
+  const [addressCountry, setAddressCountry] = useState<string>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().addressCountry;
+    return "USA";
+  });
 
   // AI Agent Configuration (Below the Organization Box)
-  const [selectedIndustries, setSelectedIndustries] = useState<string[]>(["restaurant"]);
-  const [selectedCapabilities, setSelectedCapabilities] = useState<string[]>([
-    "order_taker",
-    "reservation",
-    "book_appointment",
-  ]);
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>(() => {
+    if (typeof window !== "undefined") return getStoredBusinessProfile().selectedIndustries || ["restaurant"];
+    return ["restaurant"];
+  });
+  const [selectedCapabilities, setSelectedCapabilities] = useState<string[]>(() => {
+    if (typeof window !== "undefined")
+      return getStoredBusinessProfile().selectedCapabilities || [
+        "order_taker",
+        "reservation",
+        "book_appointment",
+      ];
+    return ["order_taker", "reservation", "book_appointment"];
+  });
 
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saved, setSaved] = useState<boolean>(false);
   const [showJson, setShowJson] = useState<boolean>(true);
   const [copied, setCopied] = useState<boolean>(false);
+
+  // Sync with persistent database on mount and listen to updates
+  useEffect(() => {
+    const local = getStoredBusinessProfile();
+    setBusinessName(local.businessName);
+    setLegalName(local.legalName);
+    setDescription(local.description);
+    setSpecialtyValue(local.specialtyValue);
+    setPhone(local.phone);
+    setEmail(local.email);
+    setWebsite(local.website);
+    setAddressStreet(local.addressStreet);
+    setAddressCity(local.addressCity);
+    setAddressState(local.addressState);
+    setAddressZip(local.addressZip);
+    setAddressCountry(local.addressCountry);
+    if (local.selectedIndustries) setSelectedIndustries(local.selectedIndustries);
+    if (local.selectedCapabilities) setSelectedCapabilities(local.selectedCapabilities);
+
+    fetchServerBusinessProfile()
+      .then((srv) => {
+        setBusinessName(srv.businessName);
+        setLegalName(srv.legalName);
+        setDescription(srv.description);
+        setSpecialtyValue(srv.specialtyValue);
+        setPhone(srv.phone);
+        setEmail(srv.email);
+        setWebsite(srv.website);
+        setAddressStreet(srv.addressStreet);
+        setAddressCity(srv.addressCity);
+        setAddressState(srv.addressState);
+        setAddressZip(srv.addressZip);
+        setAddressCountry(srv.addressCountry);
+        if (srv.selectedIndustries) setSelectedIndustries(srv.selectedIndustries);
+        if (srv.selectedCapabilities) setSelectedCapabilities(srv.selectedCapabilities);
+      })
+      .catch((err) => console.error("Server profile fetch notice:", err));
+
+    const unsub = onBusinessProfileUpdated((updated) => {
+      setBusinessName(updated.businessName);
+      setLegalName(updated.legalName);
+      setDescription(updated.description);
+      setSpecialtyValue(updated.specialtyValue);
+      setPhone(updated.phone);
+      setEmail(updated.email);
+      setWebsite(updated.website);
+      setAddressStreet(updated.addressStreet);
+      setAddressCity(updated.addressCity);
+      setAddressState(updated.addressState);
+      setAddressZip(updated.addressZip);
+      setAddressCountry(updated.addressCountry);
+      if (updated.selectedIndustries) setSelectedIndustries(updated.selectedIndustries);
+      if (updated.selectedCapabilities) setSelectedCapabilities(updated.selectedCapabilities);
+    });
+
+    return () => unsub();
+  }, []);
 
   const currentIndustries = INDUSTRIES.filter((i) => selectedIndustries.includes(i.id));
   const primaryIndustry = currentIndustries[0] || INDUSTRIES[0];
@@ -261,11 +367,31 @@ export default function BusinessProfilePage() {
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
+
+    const payload: BusinessProfileState = {
+      businessName,
+      legalName,
+      description,
+      specialtyValue,
+      phone,
+      email,
+      website,
+      addressStreet,
+      addressCity,
+      addressState,
+      addressZip,
+      addressCountry,
+      selectedIndustries,
+      selectedCapabilities,
+    };
+
+    saveStoredBusinessProfile(payload);
+
     setTimeout(() => {
       setIsSaving(false);
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    }, 800);
+      setTimeout(() => setSaved(false), 4000);
+    }, 400);
   };
 
   return (
@@ -284,14 +410,18 @@ export default function BusinessProfilePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold text-xs shadow-2xs">
+            <Database size={12} className="text-emerald-600" />
+            <span>Database: Persistent</span>
+          </span>
           {saved && (
-            <span className="text-sm text-green-600 flex items-center gap-1 font-medium animate-in fade-in">
-              <CheckCircle2 size={16} /> Saved
+            <span className="text-sm text-green-700 flex items-center gap-1 font-bold animate-in fade-in bg-green-50 px-3 py-1 rounded-lg border border-green-200">
+              <CheckCircle2 size={16} className="text-green-600" /> Saved to Database!
             </span>
           )}
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "Saving Changes..." : "Save Profile"}
+          <Button onClick={handleSave} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm">
+            {isSaving ? "Saving to Database..." : "Save Profile"}
           </Button>
         </div>
       </div>
@@ -683,8 +813,8 @@ export default function BusinessProfilePage() {
 
         {/* Footer Actions */}
         <div className="flex justify-end gap-3 pt-2">
-          <Button type="submit" disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save Profile"}
+          <Button type="submit" disabled={isSaving} className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-sm">
+            {isSaving ? "Saving to Database..." : "Save Profile"}
           </Button>
         </div>
       </form>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Layers,
   Utensils,
@@ -15,6 +15,8 @@ import {
   ChevronUp,
   Volume2,
   VolumeX,
+  Save,
+  Loader2,
 } from "lucide-react";
 
 export interface UpsellModule {
@@ -76,11 +78,15 @@ export interface UpsellSettingsState {
 interface AiConversationalUpsellingAddonsProps {
   initialState?: Partial<UpsellSettingsState>;
   onChange?: (state: UpsellSettingsState, jsonConfig: any) => void;
+  onSave?: () => void;
+  isSaving?: boolean;
 }
 
 export function AiConversationalUpsellingAddons({
   initialState,
   onChange,
+  onSave,
+  isSaving = false,
 }: AiConversationalUpsellingAddonsProps) {
   const [activeModules, setActiveModules] = useState<UpsellSettingsState>({
     categories: initialState?.categories ?? true,
@@ -88,6 +94,22 @@ export function AiConversationalUpsellingAddons({
     modifiers_and_addons: initialState?.modifiers_and_addons ?? true,
     combos_and_deals: initialState?.combos_and_deals ?? false,
   });
+
+  useEffect(() => {
+    if (initialState) {
+      setActiveModules({
+        categories: initialState.categories ?? true,
+        menu_items: initialState.menu_items ?? true,
+        modifiers_and_addons: initialState.modifiers_and_addons ?? true,
+        combos_and_deals: initialState.combos_and_deals ?? false,
+      });
+    }
+  }, [
+    initialState?.categories,
+    initialState?.menu_items,
+    initialState?.modifiers_and_addons,
+    initialState?.combos_and_deals,
+  ]);
 
   const [prompts, setPrompts] = useState<Record<string, string>>({
     categories: UPSELL_MODULES[0].defaultPrompt,
@@ -97,7 +119,7 @@ export function AiConversationalUpsellingAddons({
   });
 
   const [copied, setCopied] = useState<boolean>(false);
-  const [showJson, setShowJson] = useState<boolean>(true);
+  const [showJson, setShowJson] = useState<boolean>(false);
 
   const handleToggle = (id: keyof UpsellSettingsState) => {
     const nextState = {
@@ -176,9 +198,11 @@ export function AiConversationalUpsellingAddons({
           </div>
         </div>
 
-        <div className="text-xs font-semibold text-gray-900 bg-white border-2 border-black px-3 py-1.5 rounded-lg flex items-center gap-2 self-start sm:self-center shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-green-500"></span>
-          <span>Click card: <strong>Will Ask</strong> / <strong>Will Not Ask</strong></span>
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          <div className="text-xs font-semibold text-gray-900 bg-white border-2 border-black px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+            <span>Click card: <strong>Will Ask / Off</strong></span>
+          </div>
         </div>
       </div>
 

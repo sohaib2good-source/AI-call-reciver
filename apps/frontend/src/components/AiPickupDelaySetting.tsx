@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BellRing,
   Clock,
@@ -12,6 +12,8 @@ import {
   Sliders,
   ChevronDown,
   ChevronUp,
+  Save,
+  Loader2,
 } from "lucide-react";
 
 export interface PickupDelayOption {
@@ -68,16 +70,26 @@ interface AiPickupDelaySettingProps {
   isAiActive?: boolean;
   initialRings?: number;
   onChange?: (rings: number, config: any) => void;
+  onSave?: () => void;
+  isSaving?: boolean;
 }
 
 export function AiPickupDelaySetting({
   isAiActive = true,
   initialRings = 2,
   onChange,
+  onSave,
+  isSaving = false,
 }: AiPickupDelaySettingProps) {
   const [selectedRings, setSelectedRings] = useState<number>(initialRings);
   const [copied, setCopied] = useState<boolean>(false);
-  const [showJson, setShowJson] = useState<boolean>(true);
+  const [showJson, setShowJson] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (initialRings !== undefined) {
+      setSelectedRings(initialRings);
+    }
+  }, [initialRings]);
 
   const currentOption =
     PICKUP_DELAY_OPTIONS.find((opt) => opt.rings === selectedRings) ||
@@ -150,9 +162,11 @@ export function AiPickupDelaySetting({
         </div>
 
         {/* Live status badge */}
-        <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border-2 border-black text-gray-900 shadow-xs self-start sm:self-center">
-          <Clock size={14} className="text-black" />
-          <span>Delay: <strong>{currentOption.seconds} seconds</strong></span>
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          <div className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border-2 border-black text-gray-900 shadow-xs">
+            <Clock size={14} className="text-black" />
+            <span>Delay: <strong>{currentOption.seconds}s</strong></span>
+          </div>
         </div>
       </div>
 

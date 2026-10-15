@@ -28,6 +28,8 @@ import {
   ChevronRight,
   User,
   BookOpen,
+  TestTubes,
+  PhoneCall,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -50,6 +52,8 @@ export default function DashboardLayout({
     pathname?.startsWith("/dashboard/billing") ||
     pathname?.startsWith("/dashboard/settings") ||
     pathname?.startsWith("/dashboard/ai-settings") ||
+    pathname?.startsWith("/dashboard/test-center") ||
+    pathname?.startsWith("/dashboard/whatsapp") ||
     pathname?.startsWith("/dashboard/ai-logs");
 
   const isCrmRoute =
@@ -216,6 +220,20 @@ function TreeNavItem({
             isActive={pathname === "/dashboard/ai-settings"}
           >
             AI Settings
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/test-center"
+            icon={<TestTubes size={18} />}
+            isActive={pathname === "/dashboard/test-center"}
+          >
+            Voice Test Center
+          </TreeNavItem>
+          <TreeNavItem
+            href="/dashboard/whatsapp"
+            icon={<PhoneCall size={18} />}
+            isActive={pathname === "/dashboard/whatsapp"}
+          >
+            WhatsApp Receptionist
           </TreeNavItem>
           <TreeNavItem
             href="/dashboard/ai-logs"

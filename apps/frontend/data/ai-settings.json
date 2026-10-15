@@ -1,0 +1,43 @@
+{
+  "isAiActive": true,
+  "pickupRings": 2,
+  "businessName": "biryani master link road",
+  "businessAddress": "123 AI Boulevard, San Francisco",
+  "greeting": {
+    "includeBusinessName": true,
+    "includeAddress": false,
+    "includeAiIdentity": false,
+    "includeHoursNotice": false,
+    "welcomePrefix": "Thank you for calling",
+    "customUserMessage": "How may I assist you with your order, reservation, or appointment today?",
+    "compiledGreeting": "Thank you for calling biryani master link road. How may I assist you with your order, reservation, or appointment today?"
+  },
+  "voice": {
+    "selectedAgentId": "female_young",
+    "speed": 5,
+    "pitch": 10,
+    "isMultilingualActive": true,
+    "selectedLanguageIds": [
+      "en-US",
+      "es-ES"
+    ],
+    "activeLanguageId": "en-US",
+    "voiceId": "cgSgspJ2msm6clMCkdW9"
+  },
+  "upselling": {
+    "categoriesEnabled": true,
+    "menuItemsEnabled": true,
+    "modifiersEnabled": true,
+    "combosEnabled": false,
+    "chefSpecialPrompt": "Our Chef's Special Truffle Mushroom Pizza is very popular today. Would you like to try it?",
+    "modifierPrompt": "Would you like to add extra cheese, bacon, avocado, or premium sauces to that?",
+    "comboPrompt": "Would you like to upgrade your order into a combo meal with fries and a drink for $3.50?"
+  },
+  "businessRules": {
+    "smartUpselling": true,
+    "humanFallback": true,
+    "transferPhoneNumber": "+1 (555) 019-2834"
+  },
+  "lastSyncedAt": "2026-10-13T10:48:25.080Z",
+  "updatedAt": "2026-10-13T10:48:34.516Z"
+}

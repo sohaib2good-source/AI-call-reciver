@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { saveStoredAiSettings, getStoredAiSettings } from "@/lib/ai-settings-store";
 import {
   MessageSquareQuote,
   Sparkles,
@@ -14,30 +15,67 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
+  Save,
+  Loader2,
 } from "lucide-react";
 
 interface AiGreetingBuilderCardProps {
   businessName?: string;
   businessAddress?: string;
+  initialValues?: {
+    includeBusinessName?: boolean;
+    includeAddress?: boolean;
+    includeAiIdentity?: boolean;
+    includeHoursNotice?: boolean;
+    welcomePrefix?: string;
+    customUserMessage?: string;
+  };
   onChange?: (greetingConfig: any) => void;
+  onSave?: () => void;
+  isSaving?: boolean;
 }
 
 export function AiGreetingBuilderCard({
   businessName = "The Grand AI Cafe",
   businessAddress = "123 AI Boulevard, San Francisco",
+  initialValues,
   onChange,
+  onSave,
+  isSaving = false,
 }: AiGreetingBuilderCardProps) {
-  // Checkboxes for dynamic tags
-  const [includeBusinessName, setIncludeBusinessName] = useState<boolean>(true);
-  const [includeAddress, setIncludeAddress] = useState<boolean>(true);
-  const [includeAiIdentity, setIncludeAiIdentity] = useState<boolean>(true);
-  const [includeHoursNotice, setIncludeHoursNotice] = useState<boolean>(false);
+  // Checkboxes for dynamic tags - initialize from stored settings so page refreshes never reset
+  const [includeBusinessName, setIncludeBusinessName] = useState<boolean>(() => {
+    return initialValues?.includeBusinessName ?? (typeof window !== "undefined" ? getStoredAiSettings().greeting.includeBusinessName : true);
+  });
+  const [includeAddress, setIncludeAddress] = useState<boolean>(() => {
+    return initialValues?.includeAddress ?? (typeof window !== "undefined" ? getStoredAiSettings().greeting.includeAddress : true);
+  });
+  const [includeAiIdentity, setIncludeAiIdentity] = useState<boolean>(() => {
+    return initialValues?.includeAiIdentity ?? (typeof window !== "undefined" ? getStoredAiSettings().greeting.includeAiIdentity : true);
+  });
+  const [includeHoursNotice, setIncludeHoursNotice] = useState<boolean>(() => {
+    return initialValues?.includeHoursNotice ?? (typeof window !== "undefined" ? getStoredAiSettings().greeting.includeHoursNotice : false);
+  });
 
   // Blank spaces / Custom user text
-  const [welcomePrefix, setWelcomePrefix] = useState<string>("Thank you for calling");
-  const [customUserMessage, setCustomUserMessage] = useState<string>(
-    "How may I assist you with your order, reservation, or appointment today?"
-  );
+  const [welcomePrefix, setWelcomePrefix] = useState<string>(() => {
+    return initialValues?.welcomePrefix ?? (typeof window !== "undefined" ? getStoredAiSettings().greeting.welcomePrefix : "Thank you for calling");
+  });
+  const [customUserMessage, setCustomUserMessage] = useState<string>(() => {
+    return initialValues?.customUserMessage ?? (typeof window !== "undefined" ? getStoredAiSettings().greeting.customUserMessage : "How may I assist you with your order, reservation, or appointment today?");
+  });
+
+  // Sync state if initialValues changes from parent/server update
+  useEffect(() => {
+    if (initialValues) {
+      if (initialValues.includeBusinessName !== undefined) setIncludeBusinessName(initialValues.includeBusinessName);
+      if (initialValues.includeAddress !== undefined) setIncludeAddress(initialValues.includeAddress);
+      if (initialValues.includeAiIdentity !== undefined) setIncludeAiIdentity(initialValues.includeAiIdentity);
+      if (initialValues.includeHoursNotice !== undefined) setIncludeHoursNotice(initialValues.includeHoursNotice);
+      if (initialValues.welcomePrefix !== undefined) setWelcomePrefix(initialValues.welcomePrefix);
+      if (initialValues.customUserMessage !== undefined) setCustomUserMessage(initialValues.customUserMessage);
+    }
+  }, [initialValues]);
 
   const [copied, setCopied] = useState<boolean>(false);
   const [showJson, setShowJson] = useState<boolean>(false);
@@ -123,6 +161,48 @@ export function AiGreetingBuilderCard({
     compiledGreeting,
   ]);
 
+  const handleToggleBusinessName = (checked: boolean) => {
+    setIncludeBusinessName(checked);
+    const updated = { includeBusinessName: checked };
+    saveStoredAiSettings({ greeting: updated });
+    onChange?.(updated);
+  };
+
+  const handleToggleAddress = (checked: boolean) => {
+    setIncludeAddress(checked);
+    const updated = { includeAddress: checked };
+    saveStoredAiSettings({ greeting: updated });
+    onChange?.(updated);
+  };
+
+  const handleToggleAiIdentity = (checked: boolean) => {
+    setIncludeAiIdentity(checked);
+    const updated = { includeAiIdentity: checked };
+    saveStoredAiSettings({ greeting: updated });
+    onChange?.(updated);
+  };
+
+  const handleToggleHoursNotice = (checked: boolean) => {
+    setIncludeHoursNotice(checked);
+    const updated = { includeHoursNotice: checked };
+    saveStoredAiSettings({ greeting: updated });
+    onChange?.(updated);
+  };
+
+  const handleWelcomePrefixChange = (val: string) => {
+    setWelcomePrefix(val);
+    const updated = { welcomePrefix: val };
+    saveStoredAiSettings({ greeting: updated });
+    onChange?.(updated);
+  };
+
+  const handleCustomUserMessageChange = (val: string) => {
+    setCustomUserMessage(val);
+    const updated = { customUserMessage: val };
+    saveStoredAiSettings({ greeting: updated });
+    onChange?.(updated);
+  };
+
   const handleCopyJson = () => {
     navigator.clipboard.writeText(JSON.stringify(greetingJsonConfig, null, 2));
     setCopied(true);
@@ -168,14 +248,16 @@ export function AiGreetingBuilderCard({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={handleSpeakPreview}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold bg-white hover:bg-gray-100 text-black border-2 border-black transition cursor-pointer self-start sm:self-center shadow-xs"
-        >
-          <Volume2 size={15} className={isPlaying ? "animate-pulse text-blue-600" : ""} />
-          <span>{isPlaying ? "Playing..." : "Listen Greeting"}</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          <button
+            type="button"
+            onClick={handleSpeakPreview}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold bg-white hover:bg-gray-100 text-black border-2 border-black transition cursor-pointer shadow-xs"
+          >
+            <Volume2 size={15} className={isPlaying ? "animate-pulse text-blue-600" : ""} />
+            <span>{isPlaying ? "Playing..." : "Listen Greeting"}</span>
+          </button>
+        </div>
       </div>
 
       {/* STEP 1 PROMINENT BOX WITH FAT BLACK LINE */}
@@ -202,7 +284,7 @@ export function AiGreetingBuilderCard({
             <input
               type="checkbox"
               checked={includeBusinessName}
-              onChange={(e) => setIncludeBusinessName(e.target.checked)}
+              onChange={(e) => handleToggleBusinessName(e.target.checked)}
               className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mt-0.5 cursor-pointer"
             />
             <div>
@@ -227,7 +309,7 @@ export function AiGreetingBuilderCard({
             <input
               type="checkbox"
               checked={includeAddress}
-              onChange={(e) => setIncludeAddress(e.target.checked)}
+              onChange={(e) => handleToggleAddress(e.target.checked)}
               className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mt-0.5 cursor-pointer"
             />
             <div>
@@ -252,7 +334,7 @@ export function AiGreetingBuilderCard({
             <input
               type="checkbox"
               checked={includeAiIdentity}
-              onChange={(e) => setIncludeAiIdentity(e.target.checked)}
+              onChange={(e) => handleToggleAiIdentity(e.target.checked)}
               className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mt-0.5 cursor-pointer"
             />
             <div>
@@ -277,7 +359,7 @@ export function AiGreetingBuilderCard({
             <input
               type="checkbox"
               checked={includeHoursNotice}
-              onChange={(e) => setIncludeHoursNotice(e.target.checked)}
+              onChange={(e) => handleToggleHoursNotice(e.target.checked)}
               className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mt-0.5 cursor-pointer"
             />
             <div>
@@ -303,7 +385,7 @@ export function AiGreetingBuilderCard({
           <input
             type="text"
             value={welcomePrefix}
-            onChange={(e) => setWelcomePrefix(e.target.value)}
+            onChange={(e) => handleWelcomePrefixChange(e.target.value)}
             placeholder="e.g. Thank you for calling, Welcome to, Hello..."
             className="w-full border border-gray-300 rounded-lg p-2.5 text-sm text-gray-800 bg-white font-medium focus:ring-2 focus:ring-blue-500"
           />
@@ -313,7 +395,7 @@ export function AiGreetingBuilderCard({
               <button
                 key={preset}
                 type="button"
-                onClick={() => setWelcomePrefix(preset)}
+                onClick={() => handleWelcomePrefixChange(preset)}
                 className="px-2 py-0.5 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 border border-gray-200"
               >
                 {preset}
@@ -330,7 +412,7 @@ export function AiGreetingBuilderCard({
           <textarea
             rows={2}
             value={customUserMessage}
-            onChange={(e) => setCustomUserMessage(e.target.value)}
+            onChange={(e) => handleCustomUserMessageChange(e.target.value)}
             placeholder="Type your message here (e.g. How may I assist you with your table reservation or food order today?)..."
             className="w-full border border-gray-300 rounded-lg p-2.5 text-sm text-gray-800 bg-white font-medium focus:ring-2 focus:ring-blue-500"
           />
@@ -354,6 +436,14 @@ export function AiGreetingBuilderCard({
 
         <div className="p-3 bg-white rounded-lg border border-blue-200 shadow-2xs font-medium text-sm text-gray-900 leading-relaxed">
           &quot;{compiledGreeting}&quot;
+        </div>
+      </div>
+
+      {/* Step 1 Auto-Sync Notice */}
+      <div className="flex items-center justify-between gap-3 p-3 bg-blue-50/70 border border-blue-200/80 rounded-xl text-xs text-blue-900">
+        <div className="flex items-center gap-2">
+          <Sparkles size={14} className="text-blue-600 shrink-0" />
+          <span>Greeting updates are saved to the database and cloud receptionist using the master <strong>Save All Settings</strong> button.</span>
         </div>
       </div>
 

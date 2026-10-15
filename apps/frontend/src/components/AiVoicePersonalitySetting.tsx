@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   Mic,
   Volume2,
@@ -30,8 +30,17 @@ import {
   X,
   CheckCircle2,
   Filter,
+  Save,
+  Loader2,
 } from "lucide-react";
 import { FAMOUS_100_LANGUAGES, LanguageItem } from "@/constants/famousLanguages";
+import {
+  saveStoredAiSettings,
+  getStoredAiSettings,
+  PERSONA_TO_ELEVENLABS_VOICE,
+  VOICE_PREVIEWS,
+  AGENT_SPEECH_TUNINGS,
+} from "@/lib/ai-settings-store";
 
 export type VoiceGender = "female" | "male";
 
@@ -40,156 +49,183 @@ export interface AgentOption {
   name: string;
   gender: VoiceGender;
   badge: string;
+  vocalProfile: string;
   icon: any;
   tone: string;
   description: string;
   sampleQuote: string;
   tags: string[];
+  previewUrl?: string;
 }
 
 export const VOICE_AGENTS: AgentOption[] = [
-  // 6 Female
+  // 6 Distinct Female Voices
   {
     id: "female_young",
-    name: "Allena (Young & Casual)",
+    name: "Jessica (Young & Casual)",
     gender: "female",
     badge: "Friendly",
+    vocalProfile: "Bright & Warm Alto",
     icon: Smile,
     tone: "Relatable & Fresh",
-    description: "Sounds like a friendly young host. Very natural and relatable when taking orders or giving information.",
-    sampleQuote: "Hey there! Thanks for calling the AI Agent. What kind of delicious food can I help you order today?",
-    tags: ["Casual", "Neighborhood"],
+    description: "Playful, bright, and relatable young host. Sounds natural and conversational when taking orders or greeting callers.",
+    sampleQuote: "Hey there! Thanks for calling! What kind of delicious food can I help you order today?",
+    tags: ["Casual", "Warm Alto", "Neighborhood"],
+    previewUrl: VOICE_PREVIEWS.female_young,
   },
   {
     id: "female_energetic",
-    name: "Alexa (Energetic & Upbeat)",
+    name: "Laura (Energetic & Upbeat)",
     gender: "female",
     badge: "High Energy",
+    vocalProfile: "Upbeat & Fast-Paced",
     icon: Sun,
     tone: "Enthusiastic & Vibrant",
-    description: "Fast-paced and bright. Brings a lot of energy to the conversation, perfect for a busy brunch spot.",
-    sampleQuote: "Hi! Welcome to the AI Agent! I'm super excited to help you get your table reserved!",
-    tags: ["Brunch", "Vibrant"],
+    description: "Fast-paced, vibrant, and enthusiastic tone. High-spirited energy perfect for busy lunch rushes and trendy spots.",
+    sampleQuote: "Hi! Welcome in! I'm super excited to help you get your table reserved or take your order today!",
+    tags: ["Brunch", "Fast Pace", "Vibrant"],
+    previewUrl: VOICE_PREVIEWS.female_energetic,
   },
   {
     id: "female_mature",
-    name: "Samantha (40+ Mature)",
+    name: "Sarah (40+ Mature & Wise)",
     gender: "female",
     badge: "Grounded",
+    vocalProfile: "Calm, Warm & Reassuring",
     icon: Coffee,
     tone: "Calm & Wise",
-    description: "A warm, experienced, and patient voice. Takes time carefully listening and gives clear, wise information.",
+    description: "A warm, experienced, and patient voice. Carefully listens and guides guests through recommendations with gentle wisdom.",
     sampleQuote: "Good evening. Take your time, and I will be more than happy to guide you through our menu and reservations.",
-    tags: ["Experienced", "Patient"],
+    tags: ["Experienced", "Patient", "Warm"],
+    previewUrl: VOICE_PREVIEWS.female_mature,
   },
   {
     id: "female_receptionist",
-    name: "Rachel (Classic Receptionist)",
+    name: "Bella (Classic Receptionist)",
     gender: "female",
     badge: "Recommended",
+    vocalProfile: "Crisp & Professional",
     icon: Headset,
     tone: "Crisp & Efficient",
-    description: "Highly organized and direct. Swiftly gathers guest counts and provides exact reservation details without fluff.",
-    sampleQuote: "AI Agent front desk. Please provide your party size and preferred time, and I will confirm your booking immediately.",
-    tags: ["Efficient", "Direct"],
+    description: "Highly organized, articulate, and direct front desk receptionist. Swiftly confirms tables and takes precise orders without fluff.",
+    sampleQuote: "Front desk reception. Please provide your party size and preferred time, and I will confirm your booking immediately.",
+    tags: ["Efficient", "Direct", "Front Desk"],
+    previewUrl: VOICE_PREVIEWS.female_receptionist,
   },
   {
     id: "female_polite",
-    name: "Victoria (Polite & Courteous)",
+    name: "Alice (Polite & Courteous)",
     gender: "female",
     badge: "Hospitality",
+    vocalProfile: "Refined British & Gracious",
     icon: HeartHandshake,
     tone: "Respectful & Gracious",
-    description: "Highly respectful with elevated manners. Perfect for providing a warm, hospitable experience to every guest.",
-    sampleQuote: "Thank you so much for calling the AI Agent. It would be my absolute pleasure to assist you today.",
-    tags: ["Fine Dining", "Gracious"],
+    description: "Distinguished British etiquette with elevated hospitality. Perfect for fine dining and providing VIP care to every guest.",
+    sampleQuote: "Thank you so much for calling. It would be my absolute pleasure to assist you with our dining reservations today.",
+    tags: ["Fine Dining", "British", "Gracious"],
+    previewUrl: VOICE_PREVIEWS.female_polite,
   },
   {
     id: "female_robust",
-    name: "Olivia (Robust & Authoritative)",
+    name: "Matilda (Robust & Authoritative)",
     gender: "female",
     badge: "Confident",
+    vocalProfile: "Deep Alto & Commanding",
     icon: Shield,
     tone: "Strong & Sophisticated",
-    description: "A strong, confident, and formal presence. Gives out information with robust clarity and undeniable authority.",
-    sampleQuote: "Good day. I am the AI Agent concierge. I will ensure your arrangements are handled with the utmost precision.",
-    tags: ["Formal", "Bold"],
+    description: "A strong, confident, and formal presence. Imparts clear decisions and arrangements with robust clarity and prestige.",
+    sampleQuote: "Good day. I am your concierge. I will ensure your dining arrangements are handled with the utmost precision.",
+    tags: ["Formal", "Bold", "Concierge"],
+    previewUrl: VOICE_PREVIEWS.female_robust,
   },
-  // 6 Male
+
+  // 6 Distinct Male Voices
   {
     id: "male_young",
-    name: "David (Young & Casual)",
+    name: "Roger (Young & Casual)",
     gender: "male",
     badge: "Friendly",
+    vocalProfile: "Laid-Back Casual Tenor",
     icon: Smile,
     tone: "Relatable & Fresh",
-    description: "Sounds like a friendly young host. Very natural and relatable when taking orders or giving information.",
-    sampleQuote: "Hey there! Thanks for calling the AI Agent. What kind of delicious food can I help you order today?",
-    tags: ["Casual", "Neighborhood"],
+    description: "Sounds like a friendly, laid-back young host. Very natural, casual, and resonant when helping callers.",
+    sampleQuote: "Hey there! Thanks for calling. What kind of delicious food can I get started for you today?",
+    tags: ["Casual", "Tenor", "Neighborhood"],
+    previewUrl: VOICE_PREVIEWS.male_young,
   },
   {
     id: "male_energetic",
-    name: "Alex (Energetic & Upbeat)",
+    name: "Liam (Energetic & Upbeat)",
     gender: "male",
     badge: "High Energy",
+    vocalProfile: "Vibrant Social Creator",
     icon: Sun,
     tone: "Enthusiastic & Vibrant",
-    description: "Fast-paced and bright. Brings a lot of energy to the conversation, perfect for a busy brunch spot.",
-    sampleQuote: "Hi! Welcome to the AI Agent! I'm super excited to help you get your table reserved!",
-    tags: ["Brunch", "Vibrant"],
+    description: "Fast-paced, bright social creator voice. Brings lively upbeat energy to sports lounges and busy eateries.",
+    sampleQuote: "Hi! Welcome! Super excited to help you check out our specials and get your order rolling!",
+    tags: ["Lively", "Modern", "Vibrant"],
+    previewUrl: VOICE_PREVIEWS.male_energetic,
   },
   {
     id: "male_mature",
-    name: "George (40+ Mature)",
+    name: "George (40+ Mature & Wise)",
     gender: "male",
     badge: "Grounded",
+    vocalProfile: "Warm British Baritone",
     icon: Coffee,
     tone: "Calm & Wise",
-    description: "A warm, experienced, and patient voice. Takes time carefully listening and gives clear, wise information.",
-    sampleQuote: "Good evening. Take your time, and I will be more than happy to guide you through our menu and reservations.",
-    tags: ["Experienced", "Patient"],
+    description: "A warm, captivating British storyteller voice. Deeply comforting, wise, and takes time carefully listening.",
+    sampleQuote: "Good evening. Take your time, and I will be delighted to guide you through our menu and reservations tonight.",
+    tags: ["British", "Storyteller", "Patient"],
+    previewUrl: VOICE_PREVIEWS.male_mature,
   },
   {
     id: "male_receptionist",
-    name: "Daniel (Classic Receptionist)",
+    name: "Daniel (Classic Broadcaster)",
     gender: "male",
     badge: "Recommended",
+    vocalProfile: "Steady Broadcast Baritone",
     icon: Headset,
     tone: "Crisp & Efficient",
-    description: "Highly organized and direct. Swiftly gathers guest counts and provides exact reservation details without fluff.",
-    sampleQuote: "AI Agent front desk. Please provide your party size and preferred time, and I will confirm your booking immediately.",
-    tags: ["Efficient", "Direct"],
+    description: "Steady broadcaster baritone and classic professional front desk voice. Articulate, authoritative, and direct.",
+    sampleQuote: "Front desk reception. Please provide your party size and preferred time, and I will confirm your booking immediately.",
+    tags: ["Broadcaster", "Direct", "Front Desk"],
+    previewUrl: VOICE_PREVIEWS.male_receptionist,
   },
   {
     id: "male_polite",
-    name: "James (Polite & Courteous)",
+    name: "Eric (Polite & Courteous)",
     gender: "male",
     badge: "Hospitality",
+    vocalProfile: "Smooth & Trustworthy",
     icon: HeartHandshake,
     tone: "Respectful & Gracious",
-    description: "Highly respectful with elevated manners. Perfect for providing a warm, hospitable experience to every guest.",
-    sampleQuote: "Thank you so much for calling the AI Agent. It would be my absolute pleasure to assist you today.",
-    tags: ["Fine Dining", "Gracious"],
+    description: "Smooth, trustworthy, elevated manners for high-end dining and gracious customer care.",
+    sampleQuote: "Thank you so much for calling. It is an absolute pleasure to assist you with our dining services today.",
+    tags: ["Smooth", "Trustworthy", "Gracious"],
+    previewUrl: VOICE_PREVIEWS.male_polite,
   },
   {
     id: "male_robust",
-    name: "Marcus (Robust & Authoritative)",
+    name: "Brian (Deep & Resonant Bass)",
     gender: "male",
-    badge: "Confident",
+    badge: "Deep Bass",
+    vocalProfile: "Heavy Acoustic Bass",
     icon: Shield,
-    tone: "Strong & Sophisticated",
-    description: "A strong, confident, and formal presence. Gives out information with robust clarity and undeniable authority.",
-    sampleQuote: "Good day. I am the AI Agent concierge. I will ensure your arrangements are handled with the utmost precision.",
-    tags: ["Formal", "Bold"],
-  }
+    tone: "Deep & Resonant",
+    description: "A rich, deep, resonant acoustic bass. Powerful, solid, and commanding presence for VIP concierge service.",
+    sampleQuote: "Good day. I am your dining concierge. I will ensure your reservations and orders are handled with precision.",
+    tags: ["Deep Bass", "Baritone", "Bold"],
+    previewUrl: VOICE_PREVIEWS.male_robust,
+  },
 ];
 
 export const SPEED_LEVELS = [
   { level: 1, label: "0.8x", name: "Gentle / Slow", desc: "For elderly guests or noisy environments" },
   { level: 2, label: "0.9x", name: "Relaxed", desc: "Slightly deliberate and clear" },
   { level: 3, label: "1.0x", name: "Normal", badge: "Recommended", desc: "Standard conversational flow" },
-  { level: 4, label: "1.15x", name: "Brisk", desc: "Quick and active for rush hours" },
-  { level: 5, label: "1.3x", name: "Fast", desc: "Rapid intake for quick takeaway callers" },
+  { level: 4, label: "1.1x", name: "Brisk", desc: "Quick and active for rush hours" },
+  { level: 5, label: "1.2x", name: "Fast", desc: "Rapid intake for quick takeaway callers" },
 ];
 
 export const PITCH_DESCRIPTIONS: { [key: number]: { label: string; desc: string } } = {
@@ -210,6 +246,8 @@ interface AiVoicePersonalitySettingProps {
   initialSpeed?: number;
   initialPitch?: number;
   onChange?: (config: any) => void;
+  onSave?: () => void;
+  isSaving?: boolean;
 }
 
 export function AiVoicePersonalitySetting({
@@ -217,63 +255,130 @@ export function AiVoicePersonalitySetting({
   initialSpeed = 3,
   initialPitch = 5,
   onChange,
+  onSave,
+  isSaving = false,
 }: AiVoicePersonalitySettingProps) {
-  const [selectedAgentId, setSelectedAgentId] = useState<string>(initialAgentId);
-  const [speed, setSpeed] = useState<number>(initialSpeed);
-  const [pitch, setPitch] = useState<number>(initialPitch);
+  // Lazy initialize from stored settings so refreshes/navigations never reset to default
+  const [selectedAgentId, setSelectedAgentId] = useState<string>(() => {
+    if (initialAgentId && initialAgentId !== "female_receptionist") return initialAgentId;
+    if (typeof window !== "undefined") {
+      return getStoredAiSettings().voice?.selectedAgentId || initialAgentId;
+    }
+    return initialAgentId;
+  });
+  const [speed, setSpeed] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      return getStoredAiSettings().voice?.speed ?? initialSpeed;
+    }
+    return initialSpeed;
+  });
+  const [pitch, setPitch] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      return getStoredAiSettings().voice?.pitch ?? initialPitch;
+    }
+    return initialPitch;
+  });
 
   // Multilingual State: 100 Famous Languages & Active Selection
-  const [isMultilingualActive, setIsMultilingualActive] = useState<boolean>(true);
-  const [selectedLanguageIds, setSelectedLanguageIds] = useState<string[]>([
-    "en-US",
-    "es-ES",
-  ]);
-  const [activeLanguageId, setActiveLanguageId] = useState<string>("en-US");
+  const [isMultilingualActive, setIsMultilingualActive] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return getStoredAiSettings().voice?.isMultilingualActive ?? true;
+    }
+    return true;
+  });
+  const [selectedLanguageIds, setSelectedLanguageIds] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      return getStoredAiSettings().voice?.selectedLanguageIds || ["en-US", "es-ES"];
+    }
+    return ["en-US", "es-ES"];
+  });
+  const [activeLanguageId, setActiveLanguageId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return getStoredAiSettings().voice?.activeLanguageId || "en-US";
+    }
+    return "en-US";
+  });
+
+  // Sync state if props change from parent / server database
+  useEffect(() => {
+    if (initialAgentId && initialAgentId !== selectedAgentId) setSelectedAgentId(initialAgentId);
+    if (initialSpeed !== undefined && initialSpeed !== speed) setSpeed(initialSpeed);
+    if (initialPitch !== undefined && initialPitch !== pitch) setPitch(initialPitch);
+  }, [initialAgentId, initialSpeed, initialPitch]);
 
   const [showLanguagePicker, setShowLanguagePicker] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedRegion, setSelectedRegion] = useState<string>("ALL");
 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [playingAgentId, setPlayingAgentId] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [showJson, setShowJson] = useState<boolean>(false);
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
-  // --- SAVE / REVERT STATE ---
-  const [savedState, setSavedState] = useState({
-    selectedAgentId: initialAgentId,
-    speed: initialSpeed,
-    pitch: initialPitch,
-    isMultilingualActive: true,
-    selectedLanguageIds: ["en-US", "es-ES"],
-    activeLanguageId: "en-US",
-  });
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
-  const hasUnsavedChanges = 
-    selectedAgentId !== savedState.selectedAgentId ||
-    speed !== savedState.speed ||
-    pitch !== savedState.pitch ||
-    isMultilingualActive !== savedState.isMultilingualActive ||
-    activeLanguageId !== savedState.activeLanguageId ||
-    JSON.stringify(selectedLanguageIds) !== JSON.stringify(savedState.selectedLanguageIds);
+  // Helper to persist immediately to store and database
+  const persistVoiceSettings = (overrides?: Partial<{
+    agentId: string;
+    speed: number;
+    pitch: number;
+    isMultilingualActive: boolean;
+    selectedLanguageIds: string[];
+    activeLanguageId: string;
+  }>) => {
+    const nextAgentId = overrides?.agentId ?? selectedAgentId;
+    const nextSpeed = overrides?.speed ?? speed;
+    const nextPitch = overrides?.pitch ?? pitch;
+    const nextMultilingual = overrides?.isMultilingualActive ?? isMultilingualActive;
+    const nextLangIds = overrides?.selectedLanguageIds ?? selectedLanguageIds;
+    const nextActiveLang = overrides?.activeLanguageId ?? activeLanguageId;
 
-  const handleSave = () => {
-    setSavedState({
-      selectedAgentId,
-      speed,
-      pitch,
-      isMultilingualActive,
-      selectedLanguageIds,
-      activeLanguageId,
-    });
+    const voiceConfig = {
+      selectedAgentId: nextAgentId,
+      speed: nextSpeed,
+      pitch: nextPitch,
+      isMultilingualActive: nextMultilingual,
+      selectedLanguageIds: nextLangIds,
+      activeLanguageId: nextActiveLang,
+      voiceId: PERSONA_TO_ELEVENLABS_VOICE[nextAgentId]?.voiceId || "hpp4J3VqNfWAUOO0d1Us",
+    };
+
+    saveStoredAiSettings({ voice: voiceConfig });
+    onChange?.(voiceConfig);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 2500);
   };
 
-  const handleRevert = () => {
-    setSelectedAgentId(savedState.selectedAgentId);
-    setSpeed(savedState.speed);
-    setPitch(savedState.pitch);
-    setIsMultilingualActive(savedState.isMultilingualActive);
-    setSelectedLanguageIds(savedState.selectedLanguageIds);
-    setActiveLanguageId(savedState.activeLanguageId);
+  const handleSelectAgent = (agentId: string) => {
+    setSelectedAgentId(agentId);
+    persistVoiceSettings({ agentId });
+  };
+
+  const handleSelectSpeed = (level: number) => {
+    setSpeed(level);
+    persistVoiceSettings({ speed: level });
+  };
+
+  const handleSelectPitch = (level: number) => {
+    setPitch(level);
+    persistVoiceSettings({ pitch: level });
+  };
+
+  const handleToggleMultilingual = (active: boolean) => {
+    setIsMultilingualActive(active);
+    persistVoiceSettings({ isMultilingualActive: active });
   };
 
 
@@ -359,22 +464,19 @@ export function AiVoicePersonalitySetting({
     supported_languages: selectedLanguages.map((l) => l.name),
   });
 
-  // Notify parent ONLY when savedState changes
-  useEffect(() => {
-    onChange?.(buildConfig());
-  }, [savedState]);
-
   // Handle adding a language
   const handleAddLanguage = (lang: LanguageItem, makeActive: boolean = false) => {
+    let nextIds = selectedLanguageIds;
+    let nextActive = activeLanguageId;
     if (!selectedLanguageIds.includes(lang.id)) {
-      const nextIds = [...selectedLanguageIds, lang.id];
+      nextIds = [...selectedLanguageIds, lang.id];
       setSelectedLanguageIds(nextIds);
-      if (makeActive) {
-        setActiveLanguageId(lang.id);
-      }
-    } else if (makeActive) {
+    }
+    if (makeActive) {
+      nextActive = lang.id;
       setActiveLanguageId(lang.id);
     }
+    persistVoiceSettings({ selectedLanguageIds: nextIds, activeLanguageId: nextActive });
   };
 
   // Handle removing a language
@@ -385,70 +487,144 @@ export function AiVoicePersonalitySetting({
     }
     const nextIds = selectedLanguageIds.filter((id) => id !== langIdToRemove);
     setSelectedLanguageIds(nextIds);
+    let nextActive = activeLanguageId;
     if (activeLanguageId === langIdToRemove) {
+      nextActive = nextIds[0];
       setActiveLanguageId(nextIds[0]);
     }
+    persistVoiceSettings({ selectedLanguageIds: nextIds, activeLanguageId: nextActive });
   };
 
   // Set active primary language
   const handleSetActiveLanguage = (langId: string) => {
     setActiveLanguageId(langId);
+    let nextIds = selectedLanguageIds;
     if (!selectedLanguageIds.includes(langId)) {
-      setSelectedLanguageIds([...selectedLanguageIds, langId]);
+      nextIds = [...selectedLanguageIds, langId];
+      setSelectedLanguageIds(nextIds);
     }
+    persistVoiceSettings({ activeLanguageId: langId, selectedLanguageIds: nextIds });
   };
 
-  // Browser Text-To-Speech Preview
-  const handlePlayPreview = () => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      alert("Speech synthesis is not supported in this browser.");
-      return;
+  // Audio / Speech Synthesis Preview Handlers
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
-
-    if (isPlaying) {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
+    }
+    setIsPlaying(false);
+    setPlayingAgentId(null);
+  };
+
+  const playSpeechSynthesisFallback = (agent: AgentOption) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      setPlayingAgentId(null);
       setIsPlaying(false);
       return;
     }
-
     window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(agent.sampleQuote);
 
-    const utterance = new SpeechSynthesisUtterance(currentAgent.sampleQuote);
-    utterance.rate = 0.7 + speed * 0.1;
-    utterance.pitch = 0.5 + pitch * 0.1;
+    // Highly distinct tuning per agent so even browser fallback voices sound recognizably unique
+    const tuning = AGENT_SPEECH_TUNINGS[agent.id] || { pitch: 1.0, rate: 1.0 };
+    const userSpeedFactor = 0.8 + (speed - 1) * 0.1;
+    const userPitchFactor = 0.8 + (pitch - 1) * 0.05;
+    utterance.pitch = Math.max(0.4, Math.min(2.0, tuning.pitch * userPitchFactor));
+    utterance.rate = Math.max(0.6, Math.min(1.8, tuning.rate * userSpeedFactor));
 
-    // Set utterance language code if possible
     if (activeLanguage?.code) {
       utterance.lang = activeLanguage.code;
     }
 
-    // Pick matching voice if available
     const voices = window.speechSynthesis.getVoices();
     if (voices && voices.length > 0) {
       const match = voices.find((v) => {
         const nameLower = v.name.toLowerCase();
-        const matchesGender =
-          currentAgent.gender === "female"
-            ? nameLower.includes("female") ||
+        return agent.gender === "female"
+          ? nameLower.includes("female") ||
               nameLower.includes("zira") ||
               nameLower.includes("samantha") ||
               nameLower.includes("victoria") ||
               nameLower.includes("karen")
-            : nameLower.includes("male") ||
+          : nameLower.includes("male") ||
               nameLower.includes("david") ||
               nameLower.includes("george") ||
               nameLower.includes("daniel") ||
               nameLower.includes("alex");
-        return matchesGender;
       });
       if (match) utterance.voice = match;
     }
 
-    utterance.onstart = () => setIsPlaying(true);
-    utterance.onend = () => setIsPlaying(false);
-    utterance.onerror = () => setIsPlaying(false);
+    utterance.onstart = () => {
+      setIsPlaying(true);
+      setPlayingAgentId(agent.id);
+    };
+    utterance.onend = () => {
+      setIsPlaying(false);
+      setPlayingAgentId(null);
+    };
+    utterance.onerror = () => {
+      setIsPlaying(false);
+      setPlayingAgentId(null);
+    };
 
     window.speechSynthesis.speak(utterance);
+  };
+
+  const handlePlayAgentPreview = (agent: AgentOption, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+
+    // Toggle off if currently playing this exact agent
+    if (playingAgentId === agent.id) {
+      stopAudio();
+      return;
+    }
+
+    // Stop whatever was playing
+    stopAudio();
+
+    if (agent.previewUrl) {
+      try {
+        const audio = new Audio(agent.previewUrl);
+        audioRef.current = audio;
+        setPlayingAgentId(agent.id);
+        setIsPlaying(true);
+
+        // Adjust speed according to slider (speed 1-5 => 0.8x to 1.2x)
+        const speedMultiplier = 0.8 + (speed - 1) * 0.1;
+        audio.playbackRate = Math.max(0.7, Math.min(1.3, speedMultiplier));
+
+        audio.onended = () => {
+          setPlayingAgentId(null);
+          setIsPlaying(false);
+          audioRef.current = null;
+        };
+        audio.onerror = () => {
+          // If network blocks external audio asset, seamlessly fallback to distinct acoustic tuning
+          playSpeechSynthesisFallback(agent);
+        };
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            playSpeechSynthesisFallback(agent);
+          });
+        }
+        return;
+      } catch {
+        playSpeechSynthesisFallback(agent);
+        return;
+      }
+    }
+
+    playSpeechSynthesisFallback(agent);
+  };
+
+  const handlePlayPreview = () => {
+    handlePlayAgentPreview(currentAgent);
   };
 
   const handleCopyJson = () => {
@@ -483,7 +659,16 @@ export function AiVoicePersonalitySetting({
           </div>
         </div>
 
-
+        <div className="flex items-center gap-2 self-start sm:self-center">
+          <button
+            type="button"
+            onClick={handlePlayPreview}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-white hover:bg-gray-100 text-black border-2 border-black transition cursor-pointer shadow-xs"
+          >
+            <Volume2 size={15} className={isPlaying ? "animate-pulse text-blue-600" : ""} />
+            <span>{isPlaying ? `Playing ${currentAgent.name}...` : `Test Voice (${currentAgent.name})`}</span>
+          </button>
+        </div>
       </div>
 
       {/* STEP 4 PROMINENT BOX WITH FAT BLACK LINE (Now changed to separate boxes) */}
@@ -510,6 +695,7 @@ export function AiVoicePersonalitySetting({
               return (
                 <label
                   key={agent.id}
+                  onClick={() => handleSelectAgent(agent.id)}
                   className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
                     isSelected
                       ? "border-blue-600 bg-blue-50/40 shadow-sm ring-2 ring-blue-100"
@@ -524,7 +710,7 @@ export function AiVoicePersonalitySetting({
                           name="voice_agent"
                           value={agent.id}
                           checked={isSelected}
-                          onChange={() => setSelectedAgentId(agent.id)}
+                          onChange={() => handleSelectAgent(agent.id)}
                           className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
                         />
                         <div
@@ -550,8 +736,8 @@ export function AiVoicePersonalitySetting({
                       {agent.name}
                     </h3>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[11px] font-medium text-blue-600">
-                        {agent.tone}
+                      <span className="text-[11px] font-semibold text-blue-600">
+                        {agent.vocalProfile || agent.tone}
                       </span>
                       <span className="text-[10px] text-gray-400">•</span>
                       <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">
@@ -564,9 +750,9 @@ export function AiVoicePersonalitySetting({
                     </p>
                   </div>
 
-                  <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between">
+                  <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between gap-2">
                     <div className="flex flex-wrap gap-1">
-                      {agent.tags.map((t) => (
+                      {agent.tags.slice(0, 2).map((t) => (
                         <span
                           key={t}
                           className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-medium"
@@ -575,6 +761,29 @@ export function AiVoicePersonalitySetting({
                         </span>
                       ))}
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => handlePlayAgentPreview(agent, e)}
+                      title={`Audition authentic voice for ${agent.name}`}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer shrink-0 ${
+                        playingAgentId === agent.id
+                          ? "bg-blue-600 text-white shadow-xs animate-pulse ring-2 ring-blue-300"
+                          : "bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 border border-slate-200"
+                      }`}
+                    >
+                      {playingAgentId === agent.id ? (
+                        <>
+                          <Square size={10} className="fill-current" />
+                          <span>Stop</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 size={12} className="text-blue-600" />
+                          <span>Listen</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </label>
               );
@@ -582,22 +791,41 @@ export function AiVoicePersonalitySetting({
           </div>
 
           {/* Active Agent Quote Preview Box */}
-          <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
-                <Volume2 size={20} />
+              <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Volume2 size={20} className={playingAgentId === currentAgent.id ? "animate-bounce" : ""} />
               </div>
               <div>
                 <div className="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
                   <span>Current Sample Phrase</span>
                   <span className="text-blue-500">•</span>
                   <span className="font-semibold text-blue-700">{currentAgent.name}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-200/80 text-blue-800 font-semibold">{currentAgent.vocalProfile}</span>
                 </div>
                 <p className="text-sm text-gray-800 font-medium italic mt-0.5">
                   &ldquo;{currentAgent.sampleQuote}&rdquo;
                 </p>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => handlePlayAgentPreview(currentAgent)}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-sm transition shrink-0 cursor-pointer"
+            >
+              {playingAgentId === currentAgent.id ? (
+                <>
+                  <Square size={13} className="fill-current" />
+                  <span>Stop Preview</span>
+                </>
+              ) : (
+                <>
+                  <Play size={13} className="fill-current" />
+                  <span>Listen Active Voice</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -625,7 +853,7 @@ export function AiVoicePersonalitySetting({
                 <button
                   key={s.level}
                   type="button"
-                  onClick={() => setSpeed(s.level)}
+                  onClick={() => handleSelectSpeed(s.level)}
                   className={`p-3 rounded-xl border text-left transition-all relative ${
                     isSelected
                       ? "border-blue-600 bg-blue-600 text-white shadow-md ring-2 ring-blue-300 ring-offset-1"
@@ -704,7 +932,7 @@ export function AiVoicePersonalitySetting({
                     <button
                       key={val}
                       type="button"
-                      onClick={() => setPitch(val)}
+                      onClick={() => handleSelectPitch(val)}
                       className={`flex flex-col items-center group transition-transform ${
                         isSelected ? "scale-110" : "hover:scale-105"
                       }`}
@@ -771,7 +999,7 @@ export function AiVoicePersonalitySetting({
               <span className="text-xs font-semibold text-gray-700">Multilingual Mode</span>
               <button
                 type="button"
-                onClick={() => setIsMultilingualActive(!isMultilingualActive)}
+                onClick={() => handleToggleMultilingual(!isMultilingualActive)}
                 className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                   isMultilingualActive ? "bg-emerald-600" : "bg-gray-300"
                 }`}
@@ -1077,6 +1305,14 @@ export function AiVoicePersonalitySetting({
           )}
         </div>
 
+        {/* Step 4 Auto-Sync Notice */}
+        <div className="flex items-center justify-between gap-4 p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl text-xs text-blue-900">
+          <div className="flex items-center gap-2">
+            <Sparkles size={14} className="text-blue-600 shrink-0" />
+            <span>Active persona <strong>{currentAgent.name}</strong> ({SPEED_LEVELS.find((s) => s.level === speed)?.label || "1.0x"}) will be activated via the master <strong>Save All Settings</strong> button.</span>
+          </div>
+        </div>
+
         {/* ======================================================== */}
         {/* 6. LIVE JSON TELEPHONY CONFIGURATION                    */}
         {/* ======================================================== */}
@@ -1121,41 +1357,13 @@ export function AiVoicePersonalitySetting({
         </div>
       </div>
 
-      {/* FLOATING ACTION BAR */}
-      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-200">
-        <button
-          onClick={handlePlayPreview}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm ${
-            isPlaying ? "bg-amber-600 text-white animate-pulse" : "bg-black text-white hover:bg-gray-800"
-          }`}
-        >
-          {isPlaying ? <Square size={16} className="fill-current" /> : <Play size={16} className="fill-current" />}
-          {isPlaying ? "Stop" : "Test Voice"}
-        </button>
-
-        {hasUnsavedChanges && (
-          <button
-            onClick={handleRevert}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all border border-red-100"
-          >
-            <X size={16} />
-            Revert
-          </button>
-        )}
-
-        <button
-          onClick={handleSave}
-          disabled={!hasUnsavedChanges}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm ${
-            hasUnsavedChanges
-              ? "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5"
-              : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 shadow-none"
-          }`}
-        >
-          <Check size={16} />
-          {hasUnsavedChanges ? "Save Changes" : "Saved"}
-        </button>
-      </div>
+      {/* Toast Notification on Successful Auto-Save */}
+      {saveSuccess && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700 text-xs font-semibold animate-in fade-in slide-in-from-bottom-2">
+          <CheckCircle2 size={16} className="text-emerald-400" />
+          <span>Voice &amp; Personality Saved to Database</span>
+        </div>
+      )}
 
     </section>
   );
