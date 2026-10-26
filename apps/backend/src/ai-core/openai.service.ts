@@ -15,7 +15,7 @@ export class OpenAIService {
     private toolRegistry: ToolRegistry
   ) {
     this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: process.env.OPENAI_API_KEY || 'dummy-placeholder-key',
     });
   }
 
@@ -39,7 +39,13 @@ export class OpenAIService {
     ];
 
     try {
-      const completion = await this.openai.chat.completions.create({
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey || apiKey === 'dummy-placeholder-key') {
+        throw new Error('OPENAI_API_KEY is not configured in environment variables.');
+      }
+
+      const client = new OpenAI({ apiKey });
+      const completion = await client.chat.completions.create({
         model: 'gpt-4o',
         messages: messages,
       });
