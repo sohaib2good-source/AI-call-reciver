@@ -1,5 +1,6 @@
-# Base Node 20 image with modern pnpm
+# Base Node 20 image with modern pnpm and Prisma OpenSSL runtime support
 FROM node:20-alpine AS base
+RUN apk add --no-cache openssl libc6-compat
 RUN npm install -g pnpm@latest
 WORKDIR /app
 
