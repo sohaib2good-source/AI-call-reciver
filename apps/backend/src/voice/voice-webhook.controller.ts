@@ -27,14 +27,18 @@ export class VoiceWebhookController {
     try {
       await this.callService.handleIncomingCall(tenantId, CallSid, From, To);
       
-      // Tell Twilio to open a WebSocket stream to our AI Server
-      const wssUrl = `wss://${process.env.APP_DOMAIN}/streams/ai`;
-      const twiml = this.twilioProvider.generateConnectStreamResponse(tenantId, CallSid, wssUrl);
+      const elevenLabsAgentId =
+        process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID ||
+        process.env.ELEVENLABS_AGENT_ID ||
+        "agent_2001m4ha09d9e88bn4c0vmjzh0rw";
+
+      // Direct bidirectional media stream to ElevenLabs Conversational AI
+      const streamUrl = `wss://api.elevenlabs.io/v1/convai/conversation?agent_id=${elevenLabsAgentId}`;
+      const twiml = this.twilioProvider.generateConnectStreamResponse(tenantId, CallSid, streamUrl);
       
       res.set('Content-Type', 'text/xml');
       return res.send(twiml);
     } catch (e) {
-      // Fallback
       res.set('Content-Type', 'text/xml');
       return res.send(this.twilioProvider.generateHangupResponse());
     }

@@ -169,10 +169,11 @@ export default function PhoneNumbersPage() {
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 text-blue-800 font-bold text-sm mb-2">
             <PhoneCall className="w-4 h-4 text-blue-600" />
-            1. Mobile SIM / Cellular Calling
+            1. Mobile SIM / Cellular Calling (Twilio + ElevenLabs)
           </div>
           <p className="text-xs text-blue-900 leading-relaxed">
-            <strong>How it works:</strong> You dial a phone number from your mobile phone keypad (SIM card). The call routes through <strong>Twilio Voice</strong> to our backend. The AI answers out loud, listens to your voice, and replies in real time.
+            <strong>Number Provider:</strong> Twilio &bull; <strong>Voice Engine:</strong> ElevenLabs Conversational AI (<code className="bg-blue-100 text-blue-900 px-1 py-0.5 rounded text-[10px]">agent_2001m4ha09d9e88bn4c0vmjzh0rw</code>)<br />
+            <strong>How it works:</strong> Callers dial your Twilio number from any mobile or landline. Twilio streams audio directly to ElevenLabs Conversational AI via bidirectional WebSockets for human-like natural conversation.
           </p>
           <div className="mt-3 text-[11px] font-mono bg-blue-100/70 text-blue-800 p-1.5 rounded flex items-center justify-between">
             <span className="truncate">https://integration-common-giant-seemed.trycloudflare.com/api/voice/twilio/incoming</span>

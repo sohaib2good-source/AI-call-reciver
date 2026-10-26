@@ -186,6 +186,9 @@ importers:
       react-hook-form:
         specifier: ^7.51.3
         version: 7.81.0(react@19.2.7)
+      retell-client-js-sdk:
+        specifier: ^3.0.2
+        version: 3.0.2(@types/dom-mediacapture-record@1.0.22)
       zod:
         specifier: ^3.23.4
         version: 3.25.76
@@ -3826,6 +3829,9 @@ packages:
   restore-cursor@5.1.0:
     resolution: {integrity: sha512-oMA2dcrw6u0YfxJQXm342bFKX/E4sG9rbTzO9ptUcR/e8A33cHuvStiYOwH7fszkZlZ1z/ta9AAoPk2F4qIOHA==}
     engines: {node: '>=18'}
+
+  retell-client-js-sdk@3.0.2:
+    resolution: {integrity: sha512-Ta6FCGIruSosi+zAc1xhlgDv6+q2g/PsjowkwfZh1RUFjy9KGCyLe/TAlCDxExFqKcRfb/Rjd/qmUYJhdhMJPA==}
 
   retry-request@7.0.2:
     resolution: {integrity: sha512-dUOvLMJ0/JJYEn8NrpOaGNE7X3vpI5XlZS/u0ANjqtcZVKnIxP7IgCFwrKTxENw29emmwug53awKtaMm4i9g5w==}
@@ -8547,6 +8553,13 @@ snapshots:
     dependencies:
       onetime: 7.0.0
       signal-exit: 4.1.0
+
+  retell-client-js-sdk@3.0.2(@types/dom-mediacapture-record@1.0.22):
+    dependencies:
+      eventemitter3: 5.0.4
+      livekit-client: 2.22.3(@types/dom-mediacapture-record@1.0.22)
+    transitivePeerDependencies:
+      - '@types/dom-mediacapture-record'
 
   retry-request@7.0.2:
     dependencies:

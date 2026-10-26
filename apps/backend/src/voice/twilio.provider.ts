@@ -4,6 +4,15 @@ import { VoiceProviderInterface } from './voice-provider.interface';
 @Injectable()
 export class TwilioProvider implements VoiceProviderInterface {
   
+  generateRetellSipDialResponse(callId: string) {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Dial>
+    <Sip>sip:${callId}@sip.retellai.com;transport=tcp</Sip>
+  </Dial>
+</Response>`;
+  }
+
   generateConnectStreamResponse(tenantId: string, callSid: string, streamUrl: string) {
     // Generate valid TwiML to open a bidirectional media stream
     return `<?xml version="1.0" encoding="UTF-8"?>

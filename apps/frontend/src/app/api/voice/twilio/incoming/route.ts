@@ -19,10 +19,37 @@ function getGreeting() {
   return greeting;
 }
 
+function getRetellApiKey(): string | undefined {
+  if (process.env.RETELL_API_KEY && process.env.RETELL_API_KEY.trim() !== "") {
+    return process.env.RETELL_API_KEY.trim();
+  }
+
+  const candidates = [
+    path.resolve(process.cwd(), ".env.local"),
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(process.cwd(), "../../.env"),
+    path.resolve(process.cwd(), "../.env"),
+  ];
+
+  for (const filePath of candidates) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const content = fs.readFileSync(filePath, "utf-8");
+        const match = content.match(/^RETELL_API_KEY=["']?([^"'\r\n]+)["']?/m);
+        if (match && match[1] && match[1].trim() !== "") {
+          return match[1].trim();
+        }
+      }
+    } catch {}
+  }
+  return undefined;
+}
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData().catch(() => null);
     const from = formData?.get("From")?.toString() || "Unknown Caller";
+    const to = formData?.get("To")?.toString() || "";
     const callSid = formData?.get("CallSid")?.toString() || `call_${Date.now()}`;
 
     const greeting = getGreeting();
@@ -30,7 +57,54 @@ export async function POST(req: Request) {
     const protocol = host.includes("trycloudflare.com") || host.includes("https") ? "https" : "http";
     const actionUrl = `${protocol}://${host}/api/voice/twilio/respond`;
 
-    // Log call start
+    // 1. Connect Twilio call directly to ElevenLabs Conversational AI Stream
+    const elevenLabsAgentId =
+      process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID ||
+      process.env.ELEVENLABS_AGENT_ID ||
+      "agent_2001m4ha09d9e88bn4c0vmjzh0rw";
+
+    if (elevenLabsAgentId) {
+      const streamUrl = `wss://api.elevenlabs.io/v1/convai/conversation?agent_id=${elevenLabsAgentId}`;
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Connect>
+    <Stream url="${streamUrl}" />
+  </Connect>
+</Response>`;
+
+      // Log call
+      try {
+        let logs: any[] = [];
+        if (fs.existsSync(LOGS_FILE)) {
+          logs = JSON.parse(fs.readFileSync(LOGS_FILE, "utf-8"));
+          if (!Array.isArray(logs)) logs = [];
+        }
+        logs.unshift({
+          id: `call_${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          callId: callSid,
+          callerNumber: from,
+          to: to,
+          type: "CELLULAR_CALL",
+          provider: "TWILIO",
+          aiEngine: "ELEVENLABS_CONVAI",
+          agentId: elevenLabsAgentId,
+          direction: "INBOUND",
+          status: "CONNECTED_TO_ELEVENLABS",
+          outcome: "BRIDGED_TO_ELEVENLABS_VOICE_AGENT",
+        });
+        if (logs.length > 60) logs = logs.slice(0, 60);
+        if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+        fs.writeFileSync(LOGS_FILE, JSON.stringify(logs, null, 2), "utf-8");
+      } catch {}
+
+      return new Response(twiml, {
+        status: 200,
+        headers: { "Content-Type": "text/xml" },
+      });
+    }
+
+    // 2. Fallback if Retell key not configured
     try {
       let logs: any[] = [];
       if (fs.existsSync(LOGS_FILE)) {
@@ -43,20 +117,18 @@ export async function POST(req: Request) {
         callId: callSid,
         callerNumber: from,
         type: "CELLULAR_CALL",
+        provider: "TWILIO",
         direction: "INBOUND",
         status: "ANSWERED",
-        durationSeconds: 15,
         callerInput: "Inbound Cellular Phone Call",
         agentResponse: greeting,
         outcome: "CALL_PICKED_UP_AND_GREETED",
-        voiceName: "Polly.Joanna-Neural",
       });
       if (logs.length > 60) logs = logs.slice(0, 60);
       if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
       fs.writeFileSync(LOGS_FILE, JSON.stringify(logs, null, 2), "utf-8");
     } catch {}
 
-    // Return TwiML with Speech Gather
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Gather input="speech" action="${actionUrl}" method="POST" speechTimeout="auto" timeout="6">

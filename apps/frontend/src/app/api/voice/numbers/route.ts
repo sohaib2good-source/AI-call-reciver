@@ -21,7 +21,7 @@ const DEFAULT_NUMBERS: PhoneNumberRecord[] = [
   {
     id: "num_twilio_1",
     number: "+1 (555) 123-4567",
-    friendlyName: "Biryani Master Main Line (Cellular Voice)",
+    friendlyName: "Main Inbound Reception Line (Twilio + ElevenLabs Voice Agent)",
     provider: "TWILIO",
     capabilities: ["VOICE", "SMS"],
     status: "ACTIVE",
