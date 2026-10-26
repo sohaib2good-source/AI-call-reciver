@@ -26,7 +26,11 @@ export class VoiceWebhookController {
     
     try {
       await this.callService.handleIncomingCall(tenantId, CallSid, From, To);
-      
+    } catch (e: any) {
+      // In stateless or initial cloud deploy, DB record may not exist yet. Still proceed to stream call to ElevenLabs AI.
+    }
+
+    try {
       const elevenLabsAgentId =
         process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID ||
         process.env.ELEVENLABS_AGENT_ID ||
