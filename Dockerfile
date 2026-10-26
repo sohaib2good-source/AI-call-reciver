@@ -8,7 +8,7 @@ FROM base AS builder
 WORKDIR /app
 COPY . .
 RUN pnpm install --no-frozen-lockfile
-RUN pnpm --filter @ai-restaurant/database generate
+RUN pnpm --filter @ai-restaurant/database run db:generate
 RUN pnpm --filter backend build
 
 # Stage 2: Production Runner
