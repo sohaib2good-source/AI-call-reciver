@@ -1,37 +1,25 @@
-# Base image
-FROM node:18-alpine AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-
+# Base Node 20 image with modern pnpm
+FROM node:20-alpine AS base
+RUN npm install -g pnpm@latest
 WORKDIR /app
 
-# Stage 1: Build the backend
+# Stage 1: Build backend
 FROM base AS builder
+WORKDIR /app
 COPY . .
-RUN pnpm install --frozen-lockfile
-# Generate Prisma Client
+RUN pnpm install --no-frozen-lockfile
 RUN pnpm --filter @ai-restaurant/database generate
-# Build Backend
 RUN pnpm --filter backend build
 
-# Stage 2: Production Backend
+# Stage 2: Production Runner
 FROM base AS runner
 WORKDIR /app
 
-# Only copy necessary files for the backend
-COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
-COPY --from=builder /app/apps/backend/package.json ./apps/backend/package.json
-COPY --from=builder /app/packages/database/dist ./packages/database/dist
-COPY --from=builder /app/packages/database/package.json ./packages/database/package.json
-COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+# Copy all built workspace artifacts and dependencies
+COPY --from=builder /app ./
 
-# Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
-
-# Expose backend port
+# Default backend port
 EXPOSE 3001
+ENV PORT=3001
 
 CMD ["node", "apps/backend/dist/main"]
