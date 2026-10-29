@@ -17,6 +17,8 @@ interface PhoneNumberRecord {
   forwardNumber?: string;
 }
 
+const BASE_APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://aireceiver.vortexlabsworld.com";
+
 const DEFAULT_NUMBERS: PhoneNumberRecord[] = [
   {
     id: "num_twilio_1",
@@ -25,7 +27,7 @@ const DEFAULT_NUMBERS: PhoneNumberRecord[] = [
     provider: "TWILIO",
     capabilities: ["VOICE", "SMS"],
     status: "ACTIVE",
-    webhookUrl: "https://integration-common-giant-seemed.trycloudflare.com/api/voice/twilio/incoming",
+    webhookUrl: `${BASE_APP_URL}/api/voice/twilio/incoming`,
     assignedRestaurant: "biryani master link road",
     forwardNumber: "+1 (555) 000-1111",
   },
@@ -36,7 +38,7 @@ const DEFAULT_NUMBERS: PhoneNumberRecord[] = [
     provider: "WHATSAPP",
     capabilities: ["VOICE", "TEXT", "VOICE_NOTES", "CALLS"],
     status: "ACTIVE",
-    webhookUrl: "https://integration-common-giant-seemed.trycloudflare.com/api/whatsapp/webhook",
+    webhookUrl: `${BASE_APP_URL}/api/whatsapp/webhook`,
     assignedRestaurant: "biryani master link road",
   },
 ];
@@ -45,7 +47,15 @@ function readNumbers(): PhoneNumberRecord[] {
   try {
     if (fs.existsSync(NUMBERS_FILE)) {
       const data = JSON.parse(fs.readFileSync(NUMBERS_FILE, "utf-8"));
-      if (Array.isArray(data) && data.length > 0) return data;
+      if (Array.isArray(data) && data.length > 0) {
+        // Dynamically replace any stale trycloudflare URLs with active domain
+        return data.map((item: PhoneNumberRecord) => ({
+          ...item,
+          webhookUrl: item.webhookUrl?.includes("trycloudflare.com")
+            ? item.webhookUrl.replace(/https:\/\/[^/]+/, BASE_APP_URL)
+            : item.webhookUrl,
+        }));
+      }
     }
   } catch (e) {
     console.warn("Error reading phone numbers:", e);

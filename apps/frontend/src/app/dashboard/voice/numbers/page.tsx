@@ -37,6 +37,7 @@ export default function PhoneNumbersPage() {
   const [numbers, setNumbers] = useState<PhoneNumberRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [appBaseUrl, setAppBaseUrl] = useState("https://aireceiver.vortexlabsworld.com");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editNumber, setEditNumber] = useState("");
   const [editName, setEditName] = useState("");
@@ -62,6 +63,14 @@ export default function PhoneNumbersPage() {
 
   useEffect(() => {
     fetchNumbers();
+    if (typeof window !== "undefined") {
+      const detected =
+        process.env.NEXT_PUBLIC_APP_URL ||
+        (window.location.origin.includes("localhost")
+          ? "https://aireceiver.vortexlabsworld.com"
+          : window.location.origin);
+      setAppBaseUrl(detected);
+    }
   }, []);
 
   const handleCopy = (text: string, key: string) => {
@@ -176,9 +185,9 @@ export default function PhoneNumbersPage() {
             <strong>How it works:</strong> Callers dial your Twilio number from any mobile or landline. Twilio streams audio directly to ElevenLabs Conversational AI via bidirectional WebSockets for human-like natural conversation.
           </p>
           <div className="mt-3 text-[11px] font-mono bg-blue-100/70 text-blue-800 p-1.5 rounded flex items-center justify-between">
-            <span className="truncate">https://integration-common-giant-seemed.trycloudflare.com/api/voice/twilio/incoming</span>
+            <span className="truncate">{`${appBaseUrl}/api/voice/twilio/incoming`}</span>
             <button
-              onClick={() => handleCopy("https://integration-common-giant-seemed.trycloudflare.com/api/voice/twilio/incoming", "tw_wh")}
+              onClick={() => handleCopy(`${appBaseUrl}/api/voice/twilio/incoming`, "tw_wh")}
               className="hover:text-blue-950 font-sans text-[10px] font-bold underline ml-2 shrink-0"
             >
               {copiedKey === "tw_wh" ? "Copied!" : "Copy URL"}
@@ -387,11 +396,11 @@ export default function PhoneNumbersPage() {
           <li>
             Under <strong>Voice Configuration &rarr; A CALL COMES IN</strong>, select <strong>Webhook</strong> and enter:
             <div className="mt-1 font-mono text-xs bg-blue-50 border border-blue-200 p-2.5 rounded-lg text-blue-800 flex items-center justify-between max-w-xl">
-              <span className="truncate font-semibold">https://integration-common-giant-seemed.trycloudflare.com/api/voice/twilio/incoming</span>
+              <span className="truncate font-semibold">{`${appBaseUrl}/api/voice/twilio/incoming`}</span>
               <button
                 onClick={() =>
                   handleCopy(
-                    "https://integration-common-giant-seemed.trycloudflare.com/api/voice/twilio/incoming",
+                    `${appBaseUrl}/api/voice/twilio/incoming`,
                     "guide_wh"
                   )
                 }

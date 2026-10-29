@@ -6,7 +6,7 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const PROFILE_FILE = path.join(DATA_DIR, "business-profile.json");
 const AI_SETTINGS_FILE = path.join(DATA_DIR, "ai-settings.json");
 
-export const DEFAULT_BUSINESS_PROFILE = {
+const DEFAULT_BUSINESS_PROFILE = {
   businessName: "The Grand AI Cafe",
   legalName: "Grand AI Cafe LLC",
   description: "A futuristic dining and reception experience powered by conversational AI.",

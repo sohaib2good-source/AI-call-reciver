@@ -78,6 +78,7 @@ export default function WhatsAppIntegrationPage() {
   const [loading, setLoading] = useState(true);
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedToken, setCopiedToken] = useState(false);
+  const [appBaseUrl, setAppBaseUrl] = useState("https://aireceiver.vortexlabsworld.com");
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showMetaGuide, setShowMetaGuide] = useState(false);
@@ -101,6 +102,14 @@ export default function WhatsAppIntegrationPage() {
 
   useEffect(() => {
     fetchConfigAndLogs();
+    if (typeof window !== "undefined") {
+      const detected =
+        process.env.NEXT_PUBLIC_APP_URL ||
+        (window.location.origin.includes("localhost")
+          ? "https://aireceiver.vortexlabsworld.com"
+          : window.location.origin);
+      setAppBaseUrl(detected);
+    }
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -138,8 +147,7 @@ export default function WhatsAppIntegrationPage() {
   };
 
   const handleCopy = (text: string, isUrl: boolean) => {
-    const fullText = isUrl ? `${window.location.origin}${text}` : text;
-    navigator.clipboard.writeText(fullText);
+    navigator.clipboard.writeText(text);
     if (isUrl) {
       setCopiedUrl(true);
       setTimeout(() => setCopiedUrl(false), 2000);
@@ -397,12 +405,12 @@ export default function WhatsAppIntegrationPage() {
                 Public Live Webhook URL (Internet Active)
               </div>
               <div className="text-xs font-mono text-emerald-300 truncate mt-0.5">
-                https://integration-common-giant-seemed.trycloudflare.com/api/whatsapp/webhook
+                {`${appBaseUrl}/api/whatsapp/webhook`}
               </div>
             </div>
             <button
               type="button"
-              onClick={() => handleCopy("https://integration-common-giant-seemed.trycloudflare.com/api/whatsapp/webhook", true)}
+              onClick={() => handleCopy(`${appBaseUrl}/api/whatsapp/webhook`, true)}
               className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 transition shrink-0 cursor-pointer"
             >
               {copiedUrl ? <Check size={12} /> : <Copy size={12} />}

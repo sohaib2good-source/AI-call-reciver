@@ -23,6 +23,8 @@ import { AuthModule } from './auth/auth.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
 import { UsersModule } from './users/users.module';
 
+import { AppController } from './app.controller';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -49,7 +51,7 @@ import { UsersModule } from './users/users.module';
     BillingModule,
     WhatsappModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule implements NestModule {

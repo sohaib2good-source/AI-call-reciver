@@ -53,9 +53,12 @@ export async function POST(req: Request) {
     const callSid = formData?.get("CallSid")?.toString() || `call_${Date.now()}`;
 
     const greeting = getGreeting();
-    const host = req.headers.get("host") || "localhost:3090";
-    const protocol = host.includes("trycloudflare.com") || host.includes("https") ? "https" : "http";
-    const actionUrl = `${protocol}://${host}/api/voice/twilio/respond`;
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "aireceiver.vortexlabsworld.com";
+    const proto = req.headers.get("x-forwarded-proto");
+    const protocol = proto || (host.includes("localhost") ? "http" : "https");
+    const actionUrl = process.env.NEXT_PUBLIC_APP_URL
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/api/voice/twilio/respond`
+      : `${protocol}://${host}/api/voice/twilio/respond`;
 
     // 1. Connect Twilio call directly to ElevenLabs Conversational AI Stream
     const elevenLabsAgentId =
