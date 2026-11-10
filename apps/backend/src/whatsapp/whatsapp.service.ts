@@ -136,40 +136,66 @@ export class WhatsappService {
     if (!userText || !from) return;
 
     // Process with AI Receptionist core
-    let replyMessage = '';
-    const lower = userText.toLowerCase();
-
-    if (lower.includes('table') || lower.includes('reserve') || lower.includes('reservation') || lower.includes('book')) {
-      replyMessage = `I would be delighted to reserve a table for you at ${businessName}! May I have the preferred date, time, and party size?`;
-    } else if (lower.includes('menu') || lower.includes('food') || lower.includes('special') || lower.includes('biryani')) {
-      replyMessage = `At ${businessName}, our specialties include our fragrant Dum Biryani, Chef's Special Truffle Mushroom Pizza, and sizzling kebabs! Would you like to place a pickup order or book a table?`;
-    } else if (lower.includes('hour') || lower.includes('open') || lower.includes('time') || lower.includes('close')) {
-      replyMessage = `We are open 7 days a week from 11:00 AM to 11:00 PM at ${businessName}. We look forward to seeing you!`;
-    } else {
-      try {
-        const tenant = await this.prisma.tenant.findFirst();
-        const tenantId = tenant ? tenant.id : 'default_tenant';
-        const aiResponse = await this.openaiService.processMessage(tenantId, from, userText);
-        replyMessage = aiResponse.message;
-      } catch (e) {
-        replyMessage = `Thank you for contacting ${businessName}! How may I assist you with your table reservation or dining order today?`;
-      }
-    }
+    const replyMessage = await this.generateReply(userText, from);
 
     // Send reply via Meta Graph API
     await this.sendMessage(from, replyMessage, phoneNumberId);
 
     // Record session in database
+    await this.recordSession(message.id || `wa_${Date.now()}`, from, userText);
+  }
+
+  /**
+   * Generates intelligent AI response for customer inquiries
+   */
+  async generateReply(userText: string, from: string): Promise<string> {
+    const { businessName } = this.getRestaurantContext();
+    const lower = userText.toLowerCase();
+
+    if (lower.includes('table') || lower.includes('reserve') || lower.includes('reservation') || lower.includes('book')) {
+      return `I would be delighted to reserve a table for you at ${businessName}! May I have the preferred date, time, and party size?`;
+    } else if (lower.includes('menu') || lower.includes('food') || lower.includes('special') || lower.includes('biryani')) {
+      return `At ${businessName}, our specialties include our fragrant Dum Biryani, Chef's Special Truffle Mushroom Pizza, and sizzling kebabs! Would you like to place a pickup order or book a table?`;
+    } else if (lower.includes('hour') || lower.includes('open') || lower.includes('time') || lower.includes('close')) {
+      return `We are open 7 days a week from 11:00 AM to 11:00 PM at ${businessName}. We look forward to seeing you!`;
+    }
+
+    try {
+      const tenant = await this.prisma.tenant.findFirst();
+      const tenantId = tenant ? tenant.id : 'default_tenant';
+      const aiResponse = await this.openaiService.processMessage(tenantId, from, userText);
+      return aiResponse.message;
+    } catch (e) {
+      return `Thank you for contacting ${businessName}! How may I assist you with your table reservation or dining order today?`;
+    }
+  }
+
+  /**
+   * Processes incoming WhatsApp messages received via Twilio Webhook
+   */
+  async processTwilioMessage(from: string, userText: string): Promise<string> {
+    const cleanFrom = from.replace(/^whatsapp:/i, '');
+    this.logger.log(`[Twilio WhatsApp] Message from ${cleanFrom}: "${userText}"`);
+
+    const reply = await this.generateReply(userText, cleanFrom);
+    await this.recordSession(`tw_wa_${Date.now()}`, cleanFrom, userText);
+    return reply;
+  }
+
+  /**
+   * Records conversation session in DB safely
+   */
+  private async recordSession(sessionId: string, from: string, summaryText: string) {
     try {
       const tenant = await this.prisma.tenant.findFirst();
       if (tenant) {
         await this.prisma.conversationSession.create({
           data: {
-            sessionId: message.id || `wa_${Date.now()}`,
+            sessionId,
             channel: 'WHATSAPP',
             status: 'COMPLETED',
             language: 'en',
-            summary: userText.substring(0, 100),
+            summary: summaryText.substring(0, 100),
             outcome: 'ANSWERED_INQUIRY',
             durationMs: 15000,
             tenantId: tenant.id,
@@ -177,7 +203,7 @@ export class WhatsappService {
         });
       }
     } catch (dbErr) {
-      this.logger.debug(`Message logging deferred: ${dbErr}`);
+      this.logger.debug(`Session logging deferred: ${dbErr}`);
     }
   }
 

@@ -28,12 +28,28 @@ export class WhatsappController {
     return res.sendStatus(HttpStatus.BAD_REQUEST);
   }
 
-  // Handle incoming calls and messages from Meta
+  // Handle incoming messages and calls from Meta & Twilio
   @Post()
   async handleIncomingMessage(@Body() body: any, @Res() res: Response) {
-    // WhatsApp requires an immediate 200 OK response
-    res.sendStatus(HttpStatus.OK);
+    // 1. Check if this is a Twilio WhatsApp webhook (From and Body)
+    const from = body?.From || body?.from;
+    const bodyText = body?.Body ?? body?.body;
 
+    if (from && typeof bodyText === 'string') {
+      const reply = await this.whatsappService.processTwilioMessage(from, bodyText);
+      const safeReply = reply
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+
+      res.set('Content-Type', 'text/xml');
+      return res.send(`<?xml version="1.0" encoding="UTF-8"?><Response><Message>${safeReply}</Message></Response>`);
+    }
+
+    // 2. Otherwise handle Meta WhatsApp Cloud API webhook format (requires immediate 200 OK)
+    res.sendStatus(HttpStatus.OK);
     await this.whatsappService.processMessage(body);
   }
 
